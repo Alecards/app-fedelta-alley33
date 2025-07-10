@@ -33,9 +33,12 @@
         <div id="loading-view" class="flex items-center justify-center min-h-screen"><div class="loader"></div></div>
 
         <div id="welcome-view" class="flex flex-col justify-between h-screen p-8 text-white hidden">
-            <div class="text-center"><img src="https://www.alley33.it/cdn/shop/files/ALLEY33_def_bianco.png?v=1678978536&width=500" alt="Logo Alley33" class="w-48 mx-auto"></div>
+            <div class="text-center">
+                <img src="./Logo_Alley_bianco.png" alt="Logo Alley33" class="w-48 mx-auto" onerror="this.src='https://www.alley33.it/cdn/shop/files/ALLEY33_def_bianco.png?v=1678978536&width=500';">
+            </div>
             <div class="text-center"><h1 class="text-4xl font-extrabold">Benvenuto</h1><p class="mt-2">La tua fidelity card, sempre con te.</p></div>
             <div class="space-y-4">
+                <button id="install-pwa-button" class="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 hidden">Installa App</button>
                 <button id="go-to-register-button" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200">Sei un nuovo utente? Registrati</button>
                 <button id="go-to-login-button" class="w-full bg-transparent border border-white text-white font-bold py-3 rounded-lg hover:bg-white hover:text-black">Sei già registrato? Accedi</button>
             </div>
@@ -277,6 +280,32 @@
         closePrivacyBtn.addEventListener('click', () => privacyModal.classList.add('hidden'));
         privacyModal.addEventListener('click', (e) => { if (e.target === privacyModal) privacyModal.classList.add('hidden'); });
     
+        // --- PWA Installation Logic ---
+        let deferredPrompt;
+        const installButton = document.getElementById('install-pwa-button');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installButton.classList.remove('hidden');
+            console.log(`'beforeinstallprompt' evento catturato.`);
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`Scelta dell'utente: ${outcome}`);
+                deferredPrompt = null;
+                installButton.classList.add('hidden');
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            console.log('PWA installata con successo');
+        });
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW registrato:', reg)).catch(err => console.log('Errore SW:', err));
