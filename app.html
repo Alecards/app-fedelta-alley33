@@ -34,7 +34,8 @@
 
         <div id="welcome-view" class="flex flex-col justify-between h-screen p-8 text-white hidden">
             <div class="text-center">
-                <img src="./Logo_Alley_bianco.png" alt="Logo Alley33" class="w-48 mx-auto" onerror="this.src='https://www.alley33.it/cdn/shop/files/ALLEY33_def_bianco.png?v=1678978536&width=500';">
+                <!-- CORREZIONE: Usato il logo BIANCO per la schermata scura -->
+                <img src="./Logo_Alley_bianco.png" alt="Logo Alley33" class="w-48 mx-auto">
             </div>
             <div class="text-center"><h1 class="text-4xl font-extrabold">Benvenuto</h1><p class="mt-2">La tua fidelity card, sempre con te.</p></div>
             <div class="space-y-4">
@@ -46,7 +47,7 @@
 
         <div id="login-view" class="p-8 hidden">
             <div class="text-center mb-8">
-                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-32 mx-auto mb-4" onerror="this.style.display='none'">
+                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-32 mx-auto mb-4">
                 <h1 class="text-3xl font-bold text-gray-800">Accedi</h1>
             </div>
             <div class="space-y-4">
@@ -61,7 +62,7 @@
 
         <div id="register-view" class="p-8 hidden">
              <div class="text-center mb-8">
-                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-32 mx-auto mb-4" onerror="this.style.display='none'">
+                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-32 mx-auto mb-4">
                 <h1 class="text-3xl font-bold text-gray-800">Crea il tuo account</h1>
             </div>
             <div class="space-y-4">
@@ -82,7 +83,7 @@
 
         <div id="recover-password-view" class="p-8 hidden">
             <div class="text-center mb-8">
-                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-32 mx-auto mb-4" onerror="this.style.display='none'">
+                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-32 mx-auto mb-4">
                 <h1 class="text-3xl font-bold text-gray-800">Recupera Password</h1>
             </div>
             <p class="text-gray-600 mb-4 text-center">Inserisci la tua email e ti invieremo un link per reimpostare la password.</p>
@@ -303,6 +304,7 @@
 
         window.addEventListener('appinstalled', () => {
             deferredPrompt = null;
+            installButton.classList.add('hidden');
             console.log('PWA installata con successo');
         });
 
