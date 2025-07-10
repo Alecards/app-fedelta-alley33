@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Alley33</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- VISTA LOGIN ADMIN -->
+    <div id="admin-login-view" class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-sm p-8 bg-white rounded-lg shadow-md">
+            <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Accesso Admin</h1>
+            <div class="space-y-4">
+                <input type="email" id="admin-email" placeholder="Email admin" class="w-full px-4 py-2 border rounded-lg">
+                <input type="password" id="admin-password" placeholder="Password" class="w-full px-4 py-2 border rounded-lg">
+                <button id="admin-login-button" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700">Entra</button>
+            </div>
+            <p id="admin-error-message" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+        </div>
+    </div>
+
+    <!-- VISTA DASHBOARD PRINCIPALE -->
+    <div id="admin-dashboard-view" class="hidden">
+        <header class="bg-gray-800 text-white p-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold">Dashboard Clienti</h1>
+            <button id="admin-logout-button" class="text-sm bg-red-500 px-3 py-1 rounded-md hover:bg-red-600">Esci</button>
+        </header>
+
+        <div class="flex flex-col md:flex-row h-[calc(100vh-64px)]">
+            <!-- Colonna Sinistra: Lista Utenti -->
+            <div class="w-full md:w-1/3 bg-white border-r overflow-y-auto">
+                <div class="p-4">
+                    <input type="search" id="search-user" placeholder="Cerca cliente per nome o email..." class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <ul id="user-list" class="divide-y"></ul>
+            </div>
+
+            <!-- Colonna Destra: Dettaglio Utente -->
+            <div id="user-detail-container" class="w-full md:w-2/3 p-6 overflow-y-auto">
+                <div id="user-detail-placeholder" class="text-center text-gray-500 mt-16">
+                    <p>Seleziona un utente dalla lista per vedere i dettagli.</p>
+                </div>
+                <div id="user-detail-content" class="hidden">
+                    <h2 id="detail-name" class="text-3xl font-bold text-gray-800"></h2>
+                    <p id="detail-email" class="text-gray-500 mb-2"></p>
+                    <p id="detail-phone" class="text-gray-500 mb-6"></p>
+                    <div class="bg-indigo-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-700">Gestione Punti</h3>
+                        <div class="flex items-center my-4">
+                            <p class="text-5xl font-bold text-indigo-600" id="detail-points"></p>
+                            <p class="ml-3 text-gray-600">punti attuali</p>
+                        </div>
+                        <div class="space-y-3">
+                            <input type="number" id="points-input" placeholder="N° punti" class="w-full px-3 py-2 border rounded-lg">
+                            <input type="text" id="description-input" placeholder="Descrizione (es. Acquisto maglia)" class="w-full px-3 py-2 border rounded-lg">
+                            <div class="flex space-x-3">
+                                <button id="add-points-button" class="flex-1 bg-green-500 text-white font-bold py-2 rounded-lg hover:bg-green-600">Aggiungi Punti</button>
+                                <button id="remove-points-button" class="flex-1 bg-yellow-500 text-white font-bold py-2 rounded-lg hover:bg-yellow-600">Scala Punti</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-3">Storico Transazioni Cliente</h3>
+                        <ul id="history-list-admin" class="space-y-2"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Abbiamo rimosso onSnapshot e aggiunto getDoc
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        
+        console.log("Lo script del pannello Admin è stato caricato correttamente.");
+
+        // --- 1. CONFIGURAZIONE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBF38Gm35yJc4kBA8OiI41XQe7fyNQbvlE",
+            authDomain: "app-fedelta-alley33.firebaseapp.com",
+            projectId: "app-fedelta-alley33",
+            storageBucket: "app-fedelta-alley33.appspot.com",
+            messagingSenderId: "773801878167",
+            appId: "1:773801878167:web:79380a8528b89315fdffd2"
+        };
+        
+        const ADMIN_EMAIL = "amministrazione@alley33.it";
+
+        // --- INIZIALIZZAZIONE ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- RIFERIMENTI DOM ---
+        const loginView = document.getElementById('admin-login-view');
+        const dashboardView = document.getElementById('admin-dashboard-view');
+        const adminEmailInput = document.getElementById('admin-email');
+        const adminPasswordInput = document.getElementById('admin-password');
+        const adminLoginButton = document.getElementById('admin-login-button');
+        const adminErrorMessage = document.getElementById('admin-error-message');
+        const adminLogoutButton = document.getElementById('admin-logout-button');
+        const userList = document.getElementById('user-list');
+        const userDetailContent = document.getElementById('user-detail-content');
+        const userDetailPlaceholder = document.getElementById('user-detail-placeholder');
+        const searchInput = document.getElementById('search-user');
+        
+        let allUsersData = [];
+        let selectedUserId = null;
+
+        // --- FUNZIONI ---
+        function showError(message) {
+            adminErrorMessage.textContent = message;
+            adminErrorMessage.classList.remove('hidden');
+        }
+
+        async function handleAdminLogin() {
+            const email = adminEmailInput.value;
+            const password = adminPasswordInput.value;
+            adminErrorMessage.classList.add('hidden');
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                console.error("Errore login admin a Firebase:", error.code, error.message);
+                if (error.code === 'auth/invalid-login-credentials') {
+                    showError("Credenziali non valide. Controlla email e password.");
+                } else {
+                    showError("Errore imprevisto. Controlla la console.");
+                }
+            }
+        }
+        
+        async function loadAllUsers() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "users"));
+                allUsersData = [];
+                userList.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const userData = { id: doc.id, ...doc.data() };
+                    allUsersData.push(userData);
+                    const li = document.createElement('li');
+                    li.className = 'p-4 hover:bg-gray-50 cursor-pointer';
+                    li.dataset.userId = userData.id;
+                    li.innerHTML = `<p class="font-semibold text-gray-800">${userData.name} ${userData.surname}</p><p class="text-sm text-gray-500">${userData.email}</p>`;
+                    userList.appendChild(li);
+                });
+            } catch (e) {
+                console.error("Errore nel caricare gli utenti: ", e);
+                alert("Impossibile caricare la lista utenti. Controlla le regole di sicurezza di Firestore.");
+            }
+        }
+        
+        // MODIFICATA: Ora non usa più un listener, ma carica i dati una volta.
+        async function displayUserDetails(userId) {
+            selectedUserId = userId;
+            userDetailPlaceholder.classList.add('hidden');
+            userDetailContent.classList.remove('hidden');
+
+            try {
+                const docSnap = await getDoc(doc(db, "users", userId));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('detail-name').textContent = `${data.name} ${data.surname}`;
+                    document.getElementById('detail-email').textContent = data.email;
+                    document.getElementById('detail-phone').textContent = `Cell: ${data.phone}`;
+                    document.getElementById('detail-points').textContent = data.points;
+
+                    const historyListAdmin = document.getElementById('history-list-admin');
+                    historyListAdmin.innerHTML = '';
+                    if (data.history && data.history.length > 0) {
+                        [...data.history].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+                            const li = document.createElement('li');
+                            li.className = 'text-sm p-2 rounded ' + (item.type === 'add' ? 'bg-green-50' : 'bg-yellow-50');
+                            li.innerHTML = `<strong>${item.type === 'add' ? '+' : '-'}${item.points} punti</strong>: ${item.description} <span class="text-gray-500 float-right">${new Date(item.date).toLocaleDateString('it-IT')}</span>`;
+                            historyListAdmin.appendChild(li);
+                        });
+                    } else {
+                        historyListAdmin.innerHTML = '<li class="text-gray-400">Nessuna transazione.</li>';
+                    }
+                }
+            } catch (e) {
+                console.error("Errore nel caricare i dettagli utente:", e);
+            }
+        }
+
+        // MODIFICATA: Ora forza l'aggiornamento della vista dopo la modifica.
+        async function updatePoints(pointsToAdd) {
+            if (!selectedUserId) return;
+            const points = parseInt(document.getElementById('points-input').value);
+            const description = document.getElementById('description-input').value;
+
+            if (isNaN(points) || points <= 0) { return alert("Inserisci un numero di punti valido."); }
+            if (!description) { return alert("Inserisci una descrizione per la transazione."); }
+
+            const userDocRef = doc(db, "users", selectedUserId);
+            try {
+                await updateDoc(userDocRef, {
+                    points: increment(pointsToAdd),
+                    history: arrayUnion({
+                        date: new Date().toISOString(),
+                        points: points,
+                        type: pointsToAdd > 0 ? 'add' : 'spend',
+                        description: description
+                    })
+                });
+                document.getElementById('points-input').value = '';
+                document.getElementById('description-input').value = '';
+                
+                // FORZA L'AGGIORNAMENTO DELLA VISTA
+                await displayUserDetails(selectedUserId);
+
+            } catch (e) {
+                console.error("Errore nell'aggiornare i punti: ", e);
+                alert("Si è verificato un errore. Controlla la console.");
+            }
+        }
+
+        function filterUsers() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filteredUsers = allUsersData.filter(user => 
+                user.name.toLowerCase().includes(searchTerm) ||
+                user.surname.toLowerCase().includes(searchTerm) ||
+                user.email.toLowerCase().includes(searchTerm)
+            );
+            userList.innerHTML = '';
+            filteredUsers.forEach(userData => {
+                const li = document.createElement('li');
+                li.className = 'p-4 hover:bg-gray-50 cursor-pointer';
+                li.dataset.userId = userData.id;
+                li.innerHTML = `<p class="font-semibold text-gray-800">${userData.name} ${userData.surname}</p><p class="text-sm text-gray-500">${userData.email}</p>`;
+                userList.appendChild(li);
+            });
+        }
+
+        // --- GESTORE AUTENTICAZIONE ---
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                loginView.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+                loadAllUsers();
+            } else {
+                if (user) { signOut(auth); }
+                loginView.classList.remove('hidden');
+                dashboardView.classList.add('hidden');
+            }
+        });
+
+        // --- EVENT LISTENERS ---
+        adminLoginButton.addEventListener('click', handleAdminLogin);
+        adminLogoutButton.addEventListener('click', () => signOut(auth));
+        userList.addEventListener('click', (e) => {
+            const li = e.target.closest('li');
+            if (li && li.dataset.userId) {
+                document.querySelectorAll('#user-list li').forEach(item => item.classList.remove('bg-indigo-100'));
+                li.classList.add('bg-indigo-100');
+                displayUserDetails(li.dataset.userId);
+            }
+        });
+        searchInput.addEventListener('keyup', filterUsers);
+        document.getElementById('add-points-button').addEventListener('click', () => {
+            const points = parseInt(document.getElementById('points-input').value);
+            if (!isNaN(points) && points > 0) updatePoints(points);
+        });
+        document.getElementById('remove-points-button').addEventListener('click', () => {
+            const points = parseInt(document.getElementById('points-input').value);
+            if (!isNaN(points) && points > 0) updatePoints(-points);
+        });
+
+    </script>
+</body>
+</html>
