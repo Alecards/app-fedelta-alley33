@@ -1,5 +1,5 @@
-// Aumenta la versione della cache ogni volta che fai una modifica importante
-const CACHE_NAME = 'alley33-card-v3'; 
+// Aumenta la versione della cache per forzare l'aggiornamento
+const CACHE_NAME = 'alley33-card-v4'; 
 const urlsToCache = [
   './', // Cache della pagina principale
   './app.html',
@@ -9,22 +9,19 @@ const urlsToCache = [
   './icon-512x512.png'
 ];
 
-// Evento di installazione
+// Evento di installazione: il service worker si installa
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Cache aperta e file aggiunti');
-        // addAll può fallire se anche solo una risorsa non è raggiungibile.
-        // Usiamo add per ogni risorsa per un controllo più granulare.
-        urlsToCache.forEach(url => {
-          cache.add(url).catch(err => console.warn(`Impossibile memorizzare nella cache ${url}: ${err}`));
-        });
+        return cache.addAll(urlsToCache);
       })
+      .then(() => self.skipWaiting()) // Forza l'attivazione del nuovo SW
   );
 });
 
-// Evento di attivazione per pulire le vecchie cache
+// Evento di attivazione: il service worker prende il controllo
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -37,22 +34,18 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Prende il controllo di tutte le schede aperte
   );
 });
 
-
-// Evento fetch: strategia "Cache first, then network"
+// Evento fetch: intercetta le richieste di rete
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
         // Se la risorsa è in cache, la restituisce.
-        if (response) {
-          return response;
-        }
         // Altrimenti, la richiede dalla rete.
-        return fetch(event.request);
+        return response || fetch(event.request);
       })
   );
 });
