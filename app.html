@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alley33 Card</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        .hidden { display: none; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 50; }
+        /* Aggiungiamo uno spinner per i caricamenti */
+        .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #4f46e5; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div id="app-container" class="max-w-md mx-auto bg-white shadow-lg min-h-screen relative">
+
+        <!-- Schermata di caricamento iniziale -->
+        <div id="loading-view" class="flex items-center justify-center min-h-screen">
+            <div class="loader"></div>
+        </div>
+
+        <!-- Schermata di Login/Registrazione -->
+        <div id="login-view" class="p-6 hidden">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">Alley33 Card</h1>
+                <p class="text-gray-500 mt-2">Accedi o registrati per usare la tua carta fedeltà digitale.</p>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="name-input" placeholder="Nome" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="surname-input" placeholder="Cognome" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="email" id="email-input" placeholder="Email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="tel" id="phone-input" placeholder="Cellulare" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="password" id="password-input" placeholder="Password (min. 6 caratteri)" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                
+                <div class="space-y-3 pt-2">
+                    <div class="flex items-start">
+                        <input id="privacy-check" type="checkbox" class="h-5 w-5 mt-0.5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <label for="privacy-check" class="ml-3 text-sm text-gray-600">Dichiaro di aver letto e accettato la <a href="#" id="open-privacy-policy" class="font-semibold text-indigo-600 hover:underline">Privacy Policy</a>.</label>
+                    </div>
+                    <div class="flex items-start">
+                        <input id="marketing-check" type="checkbox" class="h-5 w-5 mt-0.5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <label for="marketing-check" class="ml-3 text-sm text-gray-600">Acconsento a ricevere informazioni di marketing da Alley33 srl.</label>
+                    </div>
+                </div>
+
+                <button id="register-button" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors !mt-6">Registrati</button>
+                <button id="login-button" class="w-full bg-gray-700 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">Accedi</button>
+            </div>
+            <p id="error-message" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+        </div>
+
+        <!-- Schermata Principale App -->
+        <div id="main-app-view" class="hidden">
+            <header class="bg-gray-800 text-white p-4 flex justify-between items-center">
+                <div>
+                    <h2 class="font-bold text-lg">Benvenuto/a, <span id="user-name-display"></span>!</h2>
+                </div>
+                <button id="logout-button" class="text-sm bg-red-500 px-3 py-1 rounded-md hover:bg-red-600">Esci</button>
+            </header>
+            <main id="main-content" class="p-4 pb-20"></main>
+            <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 flex justify-around"></nav>
+        </div>
+        
+        <!-- Contenuto dinamico per le sezioni -->
+        <template id="card-template">
+             <div class="bg-gray-900 text-white rounded-xl shadow-2xl p-6 text-center">
+                <h3 class="text-2xl font-semibold">Punti Fedeltà</h3>
+                <p id="points-display" class="text-7xl font-bold my-4">0</p>
+                <p class="text-gray-400">Il tuo barcode personale</p>
+                <div class="bg-white p-4 rounded-lg mt-4"><svg id="barcode"></svg></div>
+            </div>
+            <div class="mt-6">
+                <h4 class="text-xl font-bold text-gray-800 mb-3">Storico Transazioni</h4>
+                <ul id="history-list" class="space-y-3"></ul>
+            </div>
+        </template>
+        <template id="shop-template">
+            <div class="text-center pt-16">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Visita il nostro Shop Online</h3>
+                <p class="text-gray-600 mb-8 max-w-xs mx-auto">Clicca il pulsante qui sotto per aprire il sito in una nuova pagina.</p>
+                <a href="https://www.alley33.it" target="_blank" class="inline-block bg-indigo-600 text-white font-bold py-4 px-10 rounded-lg hover:bg-indigo-700 transition-colors text-lg shadow-md">Vai ad Alley33.it</a>
+            </div>
+        </template>
+
+        <!-- Popup Privacy -->
+        <div id="privacy-modal" class="modal-overlay hidden">
+             <div class="bg-white rounded-lg shadow-xl m-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-gray-800">Informativa sulla Privacy</h3>
+                        <button id="close-privacy-policy" class="text-gray-500 hover:text-gray-800">&times;</button>
+                    </div>
+                    <div class="prose prose-sm text-gray-600">
+                        <p><strong>INSERISCI QUI IL TUO TESTO SULLA PRIVACY.</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== SCRIPT FIREBASE ===== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        // --- 1. CONFIGURAZIONE FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBF38Gm35yJc4kBA8OiI41XQe7fyNQbvlE",
+            authDomain: "app-fedelta-alley33.firebaseapp.com",
+            projectId: "app-fedelta-alley33",
+            storageBucket: "app-fedelta-alley33.appspot.com",
+            messagingSenderId: "773801878167",
+            appId: "1:773801878167:web:79380a8528b89315fdffd2"
+        };
+
+        // --- 2. INIZIALIZZAZIONE ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- 3. RIFERIMENTI AGLI ELEMENTI HTML ---
+        const loadingView = document.getElementById('loading-view');
+        const loginView = document.getElementById('login-view');
+        const mainAppView = document.getElementById('main-app-view');
+        const nameInput = document.getElementById('name-input');
+        const surnameInput = document.getElementById('surname-input');
+        const emailInput = document.getElementById('email-input');
+        const phoneInput = document.getElementById('phone-input');
+        const passwordInput = document.getElementById('password-input');
+        const privacyCheck = document.getElementById('privacy-check');
+        const marketingCheck = document.getElementById('marketing-check');
+        const registerButton = document.getElementById('register-button');
+        const loginButton = document.getElementById('login-button');
+        const errorMessage = document.getElementById('error-message');
+        const logoutButton = document.getElementById('logout-button');
+        const userNameDisplay = document.getElementById('user-name-display');
+        const mainContent = document.getElementById('main-content');
+        const navContainer = document.querySelector('nav');
+        const privacyModal = document.getElementById('privacy-modal');
+        const openPrivacyBtn = document.getElementById('open-privacy-policy');
+        const closePrivacyBtn = document.getElementById('close-privacy-policy');
+        
+        let unsubscribeFromFirestore = null;
+
+        // --- 4. FUNZIONI PRINCIPALI ---
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function generateEan13() {
+            let base = '200' + Math.random().toString().slice(2, 11);
+            let sum = 0;
+            for (let i = 0; i < 12; i++) { sum += parseInt(base[i]) * (i % 2 === 0 ? 1 : 3); }
+            const checkDigit = (10 - (sum % 10)) % 10;
+            return base + checkDigit;
+        }
+
+        async function handleRegister() {
+            const name = nameInput.value.trim();
+            const surname = surnameInput.value.trim();
+            const email = emailInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            errorMessage.classList.add('hidden');
+            if (!email || !name || !surname || !phone || !password) return showError('Tutti i campi sono obbligatori.');
+            if (password.length < 6) return showError('La password deve essere di almeno 6 caratteri.');
+            if (!privacyCheck.checked) return showError('Devi accettare la Privacy Policy per continuare.');
+
+            try {
+                loadingView.classList.remove('hidden');
+                loginView.classList.add('hidden');
+
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                await setDoc(doc(db, "users", user.uid), {
+                    name: name,
+                    surname: surname,
+                    email: email,
+                    phone: phone,
+                    points: 0,
+                    barcode: generateEan13(),
+                    history: [],
+                    marketingConsent: marketingCheck.checked,
+                    registrationDate: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error("Errore di registrazione:", error);
+                if (error.code === 'auth/email-already-in-use') {
+                    showError('Questa email è già registrata. Prova ad accedere.');
+                } else {
+                    showError('Errore durante la registrazione. Riprova.');
+                }
+                loadingView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+            }
+        }
+
+        async function handleLogin() {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            errorMessage.classList.add('hidden');
+            if (!email || !password) return showError('Email e password sono obbligatori.');
+
+            try {
+                loadingView.classList.remove('hidden');
+                loginView.classList.add('hidden');
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                console.error("Errore di login:", error);
+                showError('Email o password non corretti. Riprova.');
+                loadingView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            if (unsubscribeFromFirestore) {
+                unsubscribeFromFirestore();
+                unsubscribeFromFirestore = null;
+            }
+            signOut(auth);
+        }
+        
+        function renderApp(userData) {
+            userNameDisplay.textContent = `${userData.name} ${userData.surname}`;
+            
+            const cardTemplate = document.getElementById('card-template').content.cloneNode(true);
+            mainContent.innerHTML = '';
+            mainContent.appendChild(cardTemplate);
+
+            const pointsDisplay = mainContent.querySelector('#points-display');
+            const barcodeElement = mainContent.querySelector('#barcode');
+            const historyList = mainContent.querySelector('#history-list');
+
+            pointsDisplay.textContent = userData.points || 0;
+            JsBarcode(barcodeElement, userData.barcode, { format: "EAN13", lineColor: "#000", width: 2, height: 80, displayValue: true, fontSize: 18 });
+
+            historyList.innerHTML = '';
+            if (!userData.history || userData.history.length === 0) {
+                historyList.innerHTML = '<li class="text-center text-gray-500">Nessuna transazione ancora.</li>';
+            } else {
+                const sortedHistory = [...userData.history].sort((a, b) => new Date(b.date) - new Date(a.date));
+                sortedHistory.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'bg-gray-50 p-4 rounded-lg flex justify-between items-center';
+                    const sign = item.type === 'add' ? '+' : '-';
+                    const color = item.type === 'add' ? 'text-green-600' : 'text-red-600';
+                    li.innerHTML = `<div><p class="font-semibold text-gray-800">${item.description}</p><p class="text-sm text-gray-500">${new Date(item.date).toLocaleDateString('it-IT')}</p></div><span class="font-bold text-lg ${color}">${sign}${item.points}</span>`;
+                    historyList.appendChild(li);
+                });
+            }
+        }
+
+        function setupNavigation() {
+            navContainer.innerHTML = `
+                <button data-tab="card" class="tab-button flex-1 py-3 text-center text-indigo-600 font-semibold border-t-4 border-indigo-600">Card</button>
+                <button data-tab="shop" class="tab-button flex-1 py-3 text-center text-gray-500 font-semibold">Shop</button>
+            `;
+            navContainer.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const tab = e.currentTarget.dataset.tab;
+                    navContainer.querySelectorAll('.tab-button').forEach(btn => {
+                        btn.classList.remove('text-indigo-600', 'border-t-4', 'border-indigo-600');
+                        btn.classList.add('text-gray-500');
+                    });
+                    e.currentTarget.classList.add('text-indigo-600', 'border-t-4', 'border-indigo-600');
+                    e.currentTarget.classList.remove('text-gray-500');
+
+                    mainContent.innerHTML = '';
+                    if (tab === 'card') {
+                        getDoc(doc(db, "users", auth.currentUser.uid)).then(docSnap => {
+                            if (docSnap.exists()) renderApp(docSnap.data());
+                        });
+                    } else if (tab === 'shop') {
+                        const shopTemplate = document.getElementById('shop-template').content.cloneNode(true);
+                        mainContent.appendChild(shopTemplate);
+                    }
+                });
+            });
+        }
+
+        // --- 5. GESTORE DELLO STATO DI AUTENTICAZIONE ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                if (unsubscribeFromFirestore) unsubscribeFromFirestore();
+                
+                unsubscribeFromFirestore = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+                    if (docSnap.exists()) {
+                        const userData = docSnap.data();
+                        renderApp(userData);
+                    } else {
+                        console.log("Nessun dato utente trovato in Firestore!");
+                        handleLogout();
+                    }
+                });
+                
+                setupNavigation();
+                mainAppView.classList.remove('hidden');
+                loginView.classList.add('hidden');
+            } else {
+                mainAppView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+            }
+            loadingView.classList.add('hidden');
+        });
+
+        // --- 6. EVENT LISTENERS ---
+        registerButton.addEventListener('click', handleRegister);
+        loginButton.addEventListener('click', handleLogin);
+        logoutButton.addEventListener('click', handleLogout);
+        openPrivacyBtn.addEventListener('click', (e) => { e.preventDefault(); privacyModal.classList.remove('hidden'); });
+        closePrivacyBtn.addEventListener('click', () => privacyModal.classList.add('hidden'));
+        privacyModal.addEventListener('click', (e) => { if (e.target === privacyModal) privacyModal.classList.add('hidden'); });
+    </script>
+</body>
+</html>
