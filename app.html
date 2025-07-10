@@ -11,7 +11,6 @@
         body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         .hidden { display: none; }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 50; }
-        /* Aggiungiamo uno spinner per i caricamenti */
         .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #4f46e5; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -41,11 +40,15 @@
                 <div class="space-y-3 pt-2">
                     <div class="flex items-start">
                         <input id="privacy-check" type="checkbox" class="h-5 w-5 mt-0.5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <label for="privacy-check" class="ml-3 text-sm text-gray-600">Dichiaro di aver letto e accettato la <a href="#" id="open-privacy-policy" class="font-semibold text-indigo-600 hover:underline">Privacy Policy</a>.</label>
+                        <label for="privacy-check" class="ml-3 text-sm text-gray-600">
+                            Dichiaro di aver letto e accettato la <a href="#" id="open-privacy-policy" class="font-semibold text-indigo-600 hover:underline">Privacy Policy</a>.
+                        </label>
                     </div>
                     <div class="flex items-start">
                         <input id="marketing-check" type="checkbox" class="h-5 w-5 mt-0.5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <label for="marketing-check" class="ml-3 text-sm text-gray-600">Acconsento a ricevere informazioni di marketing da Alley33 srl.</label>
+                        <label for="marketing-check" class="ml-3 text-sm text-gray-600">
+                            Acconsento a ricevere informazioni di marketing da Alley33 srl.
+                        </label>
                     </div>
                 </div>
 
@@ -96,8 +99,26 @@
                         <h3 class="text-2xl font-bold text-gray-800">Informativa sulla Privacy</h3>
                         <button id="close-privacy-policy" class="text-gray-500 hover:text-gray-800">&times;</button>
                     </div>
+                    <!-- Testo della privacy policy aggiornato -->
                     <div class="prose prose-sm text-gray-600">
-                        <p><strong>INSERISCI QUI IL TUO TESTO SULLA PRIVACY.</strong></p>
+                        <h4>Titolare del Trattamento</h4>
+                        <p>Alley33 S.r.l., con sede in [Il tuo indirizzo completo], P.IVA [La tua Partita IVA], è il titolare del trattamento dei dati personali raccolti tramite questa applicazione.</p>
+                        
+                        <h4>Finalità del Trattamento</h4>
+                        <p>I dati personali da te forniti (nome, cognome, email, numero di cellulare) saranno trattati per le seguenti finalità:</p>
+                        <ul>
+                            <li><strong>Gestione del Programma Fedeltà:</strong> Per creare e gestire la tua carta fedeltà, attribuire punti in base ai tuoi acquisti, e permetterti di usufruire degli sconti e dei premi previsti dal programma. La base giuridica per questo trattamento è l'esecuzione di un contratto di cui sei parte (l'adesione al programma fedeltà).</li>
+                            <li><strong>Comunicazioni di Servizio:</strong> Per inviarti comunicazioni strettamente necessarie al funzionamento del programma (es. conferma di registrazione, aggiornamento punti, notifiche di utilizzo premi). La base giuridica è il legittimo interesse del Titolare a fornire un servizio efficiente.</li>
+                            <li><strong>Finalità di Marketing (con il tuo consenso):</strong> Solo previo tuo esplicito e separato consenso, utilizzeremo la tua email e/o il tuo numero di cellulare per inviarti newsletter, comunicazioni promozionali, offerte speciali e aggiornamenti sui nostri prodotti e servizi.</li>
+                        </ul>
+
+                        <h4>Natura del Conferimento dei Dati</h4>
+                        <p>Il conferimento dei dati per la gestione del programma fedeltà è necessario. Il mancato conferimento non ti permetterà di iscriverti al programma. Il consenso per le finalità di marketing è facoltativo e potrai revocarlo in qualsiasi momento.</p>
+                        
+                        <h4>Diritti dell'Interessato</h4>
+                        <p>In qualità di interessato, hai il diritto di accedere ai tuoi dati, chiederne la rettifica, la cancellazione (diritto all'oblio), la limitazione del trattamento, opporti al loro trattamento e il diritto alla portabilità dei dati. Per esercitare i tuoi diritti, puoi contattarci all'indirizzo email [La tua email di contatto per la privacy].</p>
+                        
+                        <p><em>[INSERISCI QUI EVENTUALI ALTRE INFORMAZIONI RICHIESTE DALLA NORMATIVA, COME I TEMPI DI CONSERVAZIONE DEI DATI, EVENTUALI DESTINATARI, ECC.]</em></p>
                     </div>
                 </div>
             </div>
@@ -174,7 +195,11 @@
             errorMessage.classList.add('hidden');
             if (!email || !name || !surname || !phone || !password) return showError('Tutti i campi sono obbligatori.');
             if (password.length < 6) return showError('La password deve essere di almeno 6 caratteri.');
-            if (!privacyCheck.checked) return showError('Devi accettare la Privacy Policy per continuare.');
+            
+            // CONTROLLO AGGIORNATO: Verifica entrambe le caselle
+            if (!privacyCheck.checked || !marketingCheck.checked) {
+                return showError('È necessario accettare la Privacy Policy e il consenso al marketing per procedere.');
+            }
 
             try {
                 loadingView.classList.remove('hidden');
