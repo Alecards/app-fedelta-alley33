@@ -90,7 +90,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyBF38Gm35yJc4kBA8OiI41XQe7fyNQbvlE",
@@ -155,7 +155,7 @@
 
         function renderUserList(users) {
             userList.innerHTML = '';
-            users.sort((a, b) => a.surname.localeCompare(b.surname)).forEach(userData => {
+            users.sort((a, b) => (a.surname || '').localeCompare(b.surname || '')).forEach(userData => {
                 const li = document.createElement('li');
                 li.className = 'p-4 hover:bg-gray-50 cursor-pointer';
                 li.dataset.userId = userData.id;
@@ -189,18 +189,17 @@
                         const li = document.createElement('li');
                         li.className = 'flex justify-between items-center text-sm p-2 rounded ' + (item.type === 'add' ? 'bg-green-50' : 'bg-yellow-50');
                         
-                        const deleteButtonHtml = item.id 
-                            ? `<button class="delete-transaction-btn text-red-500 hover:text-red-700" data-transaction-id='${item.id}'>
-                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                               </button>`
-                            : '';
+                        // CORREZIONE: Usa una combinazione di ID o data per rendere ogni transazione identificabile
+                        const transactionIdentifier = item.id || item.date;
 
                         li.innerHTML = `
                             <span>
                                 <strong>${item.type === 'add' ? '+' : '-'}${item.points} punti</strong>: ${item.description} 
                                 <span class="text-gray-500 ml-2">(${new Date(item.date).toLocaleDateString('it-IT')})</span>
                             </span>
-                            ${deleteButtonHtml}
+                            <button class="delete-transaction-btn text-red-500 hover:text-red-700" data-transaction-id='${transactionIdentifier}'>
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                            </button>
                         `;
                         historyListAdmin.appendChild(li);
                     });
@@ -233,18 +232,16 @@
                     history: arrayUnion(newTransaction)
                 });
 
-                const updatedDoc = await getDoc(userDocRef);
-                if (updatedDoc.exists()) {
-                    const freshUserData = { id: updatedDoc.id, ...updatedDoc.data() };
-                    const userIndex = allUsersData.findIndex(u => u.id === selectedUserId);
-                    if (userIndex > -1) {
-                        allUsersData[userIndex] = freshUserData;
-                    }
-                    displayUserDetails(selectedUserId);
+                const userToUpdate = allUsersData.find(u => u.id === selectedUserId);
+                if (userToUpdate) {
+                    userToUpdate.points += pointsToAdd;
+                    if (!userToUpdate.history) userToUpdate.history = [];
+                    userToUpdate.history.push(newTransaction);
                 }
                 
                 document.getElementById('points-input').value = '';
                 document.getElementById('description-input').value = '';
+                displayUserDetails(selectedUserId);
 
             } catch (e) {
                 console.error("Errore nell'aggiornare i punti: ", e);
@@ -262,7 +259,8 @@
             if (!confirm("Sei sicuro di voler eliminare questa transazione? L'azione è irreversibile.")) return;
 
             const userToUpdate = allUsersData.find(u => u.id === selectedUserId);
-            const transactionToDelete = userToUpdate?.history.find(t => t.id === transactionId);
+            // CORREZIONE: Cerca la transazione usando sia l'ID (per le nuove) sia la data (per le vecchie)
+            const transactionToDelete = userToUpdate?.history.find(t => (t.id === transactionId) || (t.date === transactionId));
 
             if (!transactionToDelete) {
                 alert("Impossibile trovare la transazione da eliminare. Ricarica la pagina e riprova.");
@@ -278,15 +276,11 @@
                     history: arrayRemove(transactionToDelete)
                 });
 
-                const updatedDoc = await getDoc(userDocRef);
-                if (updatedDoc.exists()) {
-                    const freshUserData = { id: updatedDoc.id, ...updatedDoc.data() };
-                    const userIndex = allUsersData.findIndex(u => u.id === selectedUserId);
-                    if (userIndex > -1) {
-                        allUsersData[userIndex] = freshUserData;
-                    }
-                    displayUserDetails(selectedUserId);
-                }
+                userToUpdate.points += pointsToReverse;
+                userToUpdate.history = userToUpdate.history.filter(t => (t.id || t.date) !== transactionId);
+                
+                displayUserDetails(selectedUserId);
+
             } catch (error) {
                 console.error("Errore durante l'eliminazione della transazione:", error);
                 alert("Si è verificato un errore durante l'eliminazione.");
@@ -296,9 +290,9 @@
         function filterUsers() {
             const searchTerm = searchInput.value.toLowerCase();
             const filteredUsers = allUsersData.filter(user => 
-                user.name.toLowerCase().includes(searchTerm) ||
-                user.surname.toLowerCase().includes(searchTerm) ||
-                user.email.toLowerCase().includes(searchTerm) ||
+                (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+                (user.surname && user.surname.toLowerCase().includes(searchTerm)) ||
+                (user.email && user.email.toLowerCase().includes(searchTerm)) ||
                 (user.barcode && user.barcode.includes(searchTerm))
             );
             renderUserList(filteredUsers);
