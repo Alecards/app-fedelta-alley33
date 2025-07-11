@@ -95,13 +95,32 @@
             <button class="back-to-welcome text-gray-500 text-sm mt-8 mx-auto block"> &larr; Torna alla home</button>
         </div>
 
+        <!-- Schermata Principale App -->
         <div id="main-app-view" class="hidden">
-            <header class="bg-gray-800 text-white p-4 flex justify-between items-center"><h2 class="font-bold text-lg">Benvenuto/a, <span id="user-name-display"></span>!</h2><button id="logout-button" class="text-sm bg-red-500 px-3 py-1 rounded-md">Esci</button></header>
+            <!-- MODIFICA: Header con sfondo bianco e testo nero -->
+            <header class="bg-white text-gray-800 p-4 flex justify-between items-center border-b">
+                <div id="welcome-message-container">
+                    <!-- Contenuto generato da JavaScript -->
+                </div>
+                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="h-8">
+            </header>
             <main id="main-content" class="p-4 pb-20"></main>
             <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t flex justify-around"></nav>
         </div>
         
-        <template id="card-template"><div class="bg-gray-900 text-white rounded-xl shadow-2xl p-6 text-center"><h3 class="text-2xl font-semibold">Punti Fedeltà</h3><p id="points-display" class="text-7xl font-bold my-4">0</p><p class="text-gray-400">Il tuo barcode personale</p><div class="bg-white p-4 rounded-lg mt-4"><svg id="barcode"></svg></div></div><div class="mt-6"><h4 class="text-xl font-bold text-gray-800 mb-3">Storico Transazioni</h4><ul id="history-list" class="space-y-3"></ul></div></template>
+        <template id="card-template">
+            <div class="bg-gray-900 text-white rounded-xl shadow-2xl p-6 text-center">
+                <h3 class="text-2xl font-semibold">Punti Fedeltà</h3>
+                <p id="points-display" class="text-7xl font-bold my-4">0</p>
+                <p class="text-gray-400">Il tuo barcode personale</p>
+                <div class="bg-white p-4 rounded-lg mt-4"><svg id="barcode"></svg></div>
+            </div>
+            <div class="mt-6">
+                <h4 class="text-xl font-bold text-gray-800 mb-3">Storico Transazioni</h4>
+                <ul id="history-list" class="space-y-3"></ul>
+                <button id="logout-button-main" class="w-full mt-8 bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700">Esci</button>
+            </div>
+        </template>
         <template id="shop-template"><div class="text-center pt-16"><h3 class="text-2xl font-bold text-gray-800 mb-4">Visita il nostro Shop Online</h3><p class="text-gray-600 mb-8 max-w-xs mx-auto">Clicca per aprire il sito in una nuova pagina.</p><a href="https://www.alley33.it" target="_blank" class="inline-block bg-indigo-600 text-white font-bold py-4 px-10 rounded-lg shadow-md">Vai ad Alley33.it</a></div></template>
         <div id="privacy-modal" class="modal-overlay hidden"><div class="bg-white rounded-lg shadow-xl m-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"><div class="p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold">Informativa Privacy</h3><button id="close-privacy-policy" class="text-gray-500">&times;</button></div><div class="prose prose-sm"><h4>Titolare del Trattamento</h4><p>Alley33 S.r.l., ...</p></div></div></div></div>
     </div>
@@ -217,20 +236,25 @@
         }
         recoverButton.addEventListener('click', handlePasswordRecovery);
 
-        const logoutButton = document.getElementById('logout-button');
-        const userNameDisplay = document.getElementById('user-name-display');
         const mainContent = document.getElementById('main-content');
         const navContainer = document.querySelector('nav');
         let unsubscribeFromFirestore = null;
 
         function handleLogout() { if (unsubscribeFromFirestore) unsubscribeFromFirestore(); signOut(auth); }
-        logoutButton.addEventListener('click', handleLogout);
         
         function renderApp(userData) {
-            userNameDisplay.textContent = `${userData.name} ${userData.surname}`;
+            const welcomeContainer = document.getElementById('welcome-message-container');
+            welcomeContainer.innerHTML = `
+                <p class="text-lg text-gray-600">BenvenutƏ,</p>
+                <h2 class="font-bold text-xl text-gray-800">${userData.name} ${userData.surname}</h2>
+            `;
+            
             const cardTemplate = document.getElementById('card-template').content.cloneNode(true);
             mainContent.innerHTML = '';
             mainContent.appendChild(cardTemplate);
+
+            mainContent.querySelector('#logout-button-main').addEventListener('click', handleLogout);
+            
             const pointsDisplay = mainContent.querySelector('#points-display');
             const barcodeElement = mainContent.querySelector('#barcode');
             const historyList = mainContent.querySelector('#history-list');
@@ -267,7 +291,11 @@
             if (user) {
                 if (unsubscribeFromFirestore) unsubscribeFromFirestore();
                 unsubscribeFromFirestore = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-                    if (docSnap.exists()) { renderApp(docSnap.data()); setupNavigation(); showView('main'); } 
+                    if (docSnap.exists()) { 
+                        showView('main');
+                        renderApp(docSnap.data()); 
+                        setupNavigation(); 
+                    } 
                     else { handleLogout(); }
                 });
             } else { showView('welcome'); }
@@ -289,14 +317,12 @@
             e.preventDefault();
             deferredPrompt = e;
             installButton.classList.remove('hidden');
-            console.log(`'beforeinstallprompt' evento catturato.`);
         });
 
         installButton.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                console.log(`Scelta dell'utente: ${outcome}`);
                 deferredPrompt = null;
                 installButton.classList.add('hidden');
             }
@@ -305,7 +331,6 @@
         window.addEventListener('appinstalled', () => {
             deferredPrompt = null;
             installButton.classList.add('hidden');
-            console.log('PWA installata con successo');
         });
 
         if ('serviceWorker' in navigator) {
