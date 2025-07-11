@@ -19,11 +19,7 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 50; }
         .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #16a34a; /* Verde Alley33 */ width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #welcome-view {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://www.alley33.it/cdn/shop/files/alley-33-negozio-di-abbigliamento-a-rovigo.jpg?v=1683192017&width=1500');
-            background-size: cover;
-            background-position: center;
-        }
+        /* Rimosso lo stile per #welcome-view perché ora gestito dal video */
     </style>
 </head>
 <body class="bg-gray-100">
@@ -32,15 +28,29 @@
 
         <div id="loading-view" class="flex items-center justify-center min-h-screen"><div class="loader"></div></div>
 
-        <div id="welcome-view" class="flex flex-col justify-between h-screen p-8 text-white hidden">
-            <div class="text-center">
-                <img src="./Logo_Alley_bianco.png" alt="Logo Alley33" class="w-48 mx-auto">
-            </div>
-            <div class="text-center"><h1 class="text-4xl font-extrabold">Benvenuto</h1><p class="mt-2">La tua fidelity card, sempre con te.</p></div>
-            <div class="space-y-4">
-                <button id="install-pwa-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 hidden">Installa App</button>
-                <button id="go-to-register-button" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200">Sei un nuovo utente? Registrati</button>
-                <button id="go-to-login-button" class="w-full bg-transparent border border-white text-white font-bold py-3 rounded-lg hover:bg-white hover:text-black">Sei già registrato? Accedi</button>
+        <!-- MODIFICA: Schermata di Benvenuto con Video Background -->
+        <div id="welcome-view" class="relative h-screen overflow-hidden hidden">
+            <!-- Video Background -->
+            <video autoplay loop muted playsinline class="absolute z-0 w-auto min-w-full min-h-full max-w-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <source src="./WelcomeVideo.mp4" type="video/mp4">
+                Il tuo browser non supporta il tag video.
+            </video>
+            <!-- Overlay scuro per leggibilità -->
+            <div class="absolute top-0 left-0 w-full h-full bg-black/60 z-10"></div>
+            <!-- Contenuto sopra il video -->
+            <div class="relative z-20 flex flex-col justify-between h-full p-8 text-white">
+                <div class="text-center">
+                    <img src="./Logo_Alley_bianco.png" alt="Logo Alley33" class="w-48 mx-auto">
+                </div>
+                <div class="text-center">
+                    <h1 class="text-4xl font-extrabold">Benvenuto</h1>
+                    <p class="mt-2">La tua fidelity card, sempre con te.</p>
+                </div>
+                <div class="space-y-4">
+                    <button id="install-pwa-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 hidden">Installa App</button>
+                    <button id="go-to-register-button" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200">Sei un nuovo utente? Registrati</button>
+                    <button id="go-to-login-button" class="w-full bg-transparent border border-white text-white font-bold py-3 rounded-lg hover:bg-white hover:text-black">Sei già registrato? Accedi</button>
+                </div>
             </div>
         </div>
 
@@ -94,31 +104,16 @@
             <button class="back-to-welcome text-gray-500 text-sm mt-8 mx-auto block"> &larr; Torna alla home</button>
         </div>
 
-        <!-- Schermata Principale App -->
         <div id="main-app-view" class="hidden">
             <header class="bg-white text-gray-800 p-4 flex justify-between items-center border-b">
-                <div id="welcome-message-container">
-                    <!-- Contenuto generato da JavaScript -->
-                </div>
+                <div id="welcome-message-container"></div>
                 <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="h-8">
             </header>
             <main id="main-content" class="p-4 pb-20"></main>
             <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t flex justify-around"></nav>
         </div>
         
-        <template id="card-template">
-            <div class="bg-gray-900 text-white rounded-xl shadow-2xl p-6 text-center">
-                <h3 class="text-2xl font-semibold">Punti Fedeltà</h3>
-                <p id="points-display" class="text-7xl font-bold my-4">0</p>
-                <p class="text-gray-400">Il tuo barcode personale</p>
-                <div class="bg-white p-4 rounded-lg mt-4"><svg id="barcode"></svg></div>
-            </div>
-            <div class="mt-6">
-                <h4 class="text-xl font-bold text-gray-800 mb-3">Storico Transazioni</h4>
-                <ul id="history-list" class="space-y-3"></ul>
-                <button id="logout-button-main" class="w-full mt-8 bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700">Esci</button>
-            </div>
-        </template>
+        <template id="card-template"><div class="bg-gray-900 text-white rounded-xl shadow-2xl p-6 text-center"><h3 class="text-2xl font-semibold">Punti Fedeltà</h3><p id="points-display" class="text-7xl font-bold my-4">0</p><p class="text-gray-400">Il tuo barcode personale</p><div class="bg-white p-4 rounded-lg mt-4"><svg id="barcode"></svg></div></div><div class="mt-6"><h4 class="text-xl font-bold text-gray-800 mb-3">Storico Transazioni</h4><ul id="history-list" class="space-y-3"></ul><button id="logout-button-main" class="w-full mt-8 bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700">Esci</button></div></template>
         <template id="shop-template"><div class="text-center pt-16"><h3 class="text-2xl font-bold text-gray-800 mb-4">Visita il nostro Shop Online</h3><p class="text-gray-600 mb-8 max-w-xs mx-auto">Clicca per aprire il sito in una nuova pagina.</p><a href="https://www.alley33.it" target="_blank" class="inline-block bg-green-600 text-white font-bold py-4 px-10 rounded-lg shadow-md hover:bg-green-700">Vai ad Alley33.it</a></div></template>
         <div id="privacy-modal" class="modal-overlay hidden"><div class="bg-white rounded-lg shadow-xl m-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"><div class="p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold">Informativa Privacy</h3><button id="close-privacy-policy" class="text-gray-500">&times;</button></div><div class="prose prose-sm"><h4>Titolare del Trattamento</h4><p>Alley33 S.r.l., ...</p></div></div></div></div>
     </div>
@@ -242,10 +237,7 @@
         
         function renderApp(userData) {
             const welcomeContainer = document.getElementById('welcome-message-container');
-            welcomeContainer.innerHTML = `
-                <p class="text-lg text-gray-600">BenvenutƏ,</p>
-                <h2 class="font-bold text-xl text-gray-800">${userData.name} ${userData.surname}</h2>
-            `;
+            welcomeContainer.innerHTML = `<p class="text-lg text-gray-600">BenvenutƏ,</p><h2 class="font-bold text-xl text-gray-800">${userData.name} ${userData.surname}</h2>`;
             
             const cardTemplate = document.getElementById('card-template').content.cloneNode(true);
             mainContent.innerHTML = '';
