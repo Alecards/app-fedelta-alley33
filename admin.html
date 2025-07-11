@@ -21,7 +21,7 @@
             <div class="space-y-4">
                 <input type="email" id="admin-email" placeholder="Email admin" class="w-full px-4 py-2 border rounded-lg">
                 <input type="password" id="admin-password" placeholder="Password" class="w-full px-4 py-2 border rounded-lg">
-                <button id="admin-login-button" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700">Entra</button>
+                <button id="admin-login-button" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700">Entra</button>
             </div>
             <p id="admin-error-message" class="text-red-500 text-sm mt-4 text-center hidden"></p>
         </div>
@@ -30,27 +30,29 @@
     <!-- VISTA DASHBOARD PRINCIPALE -->
     <div id="admin-dashboard-view" class="hidden">
         <header class="bg-gray-800 text-white p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold">Dashboard Clienti</h1>
+            <h1 class="text-xl font-bold">Dashboard</h1>
             <div>
                 <button id="export-button" class="text-sm bg-blue-500 px-3 py-1 rounded-md hover:bg-blue-600 mr-4">Esporta in Excel</button>
                 <button id="admin-logout-button" class="text-sm bg-red-500 px-3 py-1 rounded-md hover:bg-red-600">Esci</button>
             </div>
         </header>
 
-        <div class="flex flex-col md:flex-row h-[calc(100vh-64px)]">
-            <!-- Colonna Sinistra: Lista Utenti -->
+        <!-- TABS DI NAVIGAZIONE -->
+        <div class="bg-white border-b">
+            <nav class="flex">
+                <button data-tab="clienti" class="admin-tab-button flex-1 py-3 text-center font-semibold border-b-4 border-green-600 text-green-600">Clienti</button>
+                <button data-tab="impostazioni" class="admin-tab-button flex-1 py-3 text-center font-semibold text-gray-500">Impostazioni</button>
+            </nav>
+        </div>
+
+        <!-- CONTENUTO TAB CLIENTI -->
+        <div id="clienti-tab-content" class="flex flex-col md:flex-row h-[calc(100vh-113px)]">
             <div class="w-full md:w-1/3 bg-white border-r overflow-y-auto">
-                <div class="p-4">
-                    <input type="search" id="search-user" placeholder="Cerca per nome, email o barcode..." class="w-full px-3 py-2 border rounded-lg">
-                </div>
+                <div class="p-4"><input type="search" id="search-user" placeholder="Cerca per nome, email o barcode..." class="w-full px-3 py-2 border rounded-lg"></div>
                 <ul id="user-list" class="divide-y"></ul>
             </div>
-
-            <!-- Colonna Destra: Dettaglio Utente -->
             <div id="user-detail-container" class="w-full md:w-2/3 p-6 overflow-y-auto">
-                <div id="user-detail-placeholder" class="text-center text-gray-500 mt-16">
-                    <p>Seleziona un utente dalla lista per vedere i dettagli.</p>
-                </div>
+                <div id="user-detail-placeholder" class="text-center text-gray-500 mt-16"><p>Seleziona un utente dalla lista per vedere i dettagli.</p></div>
                 <div id="user-detail-content" class="hidden">
                     <div class="flex justify-between items-start mb-6">
                         <div>
@@ -58,15 +60,12 @@
                             <p id="detail-email" class="text-gray-500 mb-2"></p>
                             <p id="detail-phone" class="text-gray-500"></p>
                         </div>
-                        <div class="bg-white p-2 rounded-lg shadow-md">
-                            <svg id="detail-barcode"></svg>
-                        </div>
+                        <div class="bg-white p-2 rounded-lg shadow-md"><svg id="detail-barcode"></svg></div>
                     </div>
-
-                    <div class="bg-indigo-50 p-6 rounded-lg">
+                    <div class="bg-green-50 p-6 rounded-lg">
                         <h3 class="text-lg font-semibold text-gray-700">Gestione Punti</h3>
                         <div class="flex items-center my-4">
-                            <p class="text-5xl font-bold text-indigo-600" id="detail-points"></p>
+                            <p class="text-5xl font-bold text-green-600" id="detail-points"></p>
                             <p class="ml-3 text-gray-600">punti attuali</p>
                         </div>
                         <div class="space-y-3">
@@ -74,7 +73,7 @@
                             <input type="text" id="description-input" placeholder="Descrizione (es. Acquisto maglia)" class="w-full px-3 py-2 border rounded-lg">
                             <div class="flex space-x-3">
                                 <button id="add-points-button" class="flex-1 bg-green-500 text-white font-bold py-2 rounded-lg hover:bg-green-600">Aggiungi Punti</button>
-                                <button id="remove-points-button" class="flex-1 bg-yellow-500 text-white font-bold py-2 rounded-lg hover:bg-yellow-600">Scala Punti</button>
+                                <button id="remove-points-button" class="flex-1 bg-red-500 text-white font-bold py-2 rounded-lg hover:bg-red-600">Scala Punti</button>
                             </div>
                         </div>
                     </div>
@@ -85,20 +84,48 @@
                 </div>
             </div>
         </div>
+
+        <!-- CONTENUTO TAB IMPOSTAZIONI -->
+        <div id="impostazioni-tab-content" class="p-8 hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Impostazioni App</h2>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Loghi</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-lg border">
+                            <label for="logo-nero-upload" class="block text-sm font-medium text-gray-700">Logo Nero (per sfondi chiari)</label>
+                            <input type="file" id="logo-nero-upload" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"/>
+                            <img id="logo-nero-preview" class="mt-4 h-12 bg-gray-200 p-1" src="" alt="Anteprima Logo Nero">
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded-lg border">
+                            <label for="logo-bianco-upload" class="block text-sm font-medium text-white">Logo Bianco (per sfondi scuri)</label>
+                            <input type="file" id="logo-bianco-upload" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600"/>
+                            <img id="logo-bianco-preview" class="mt-4 h-12 p-1" src="" alt="Anteprima Logo Bianco">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Privacy Policy</h3>
+                    <textarea id="privacy-policy-editor" rows="10" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500"></textarea>
+                </div>
+                <button id="save-settings-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Salva Impostazioni</button>
+            </div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
         
         const firebaseConfig = {
-            apiKey: "AIzaSyBF38Gm35yJc4kBA8OiI41XQe7fyNQbvlE",
-            authDomain: "app-fedelta-alley33.firebaseapp.com",
-            projectId: "app-fedelta-alley33",
-            storageBucket: "app-fedelta-alley33.appspot.com",
-            messagingSenderId: "773801878167",
-            appId: "1:773801878167:web:79380a8528b89315fdffd2"
+            apiKey: "...", // INSERISCI QUI LE TUE NUOVE CHIAVI
+            authDomain: "...",
+            projectId: "...",
+            storageBucket: "...",
+            messagingSenderId: "...",
+            appId: "..."
         };
         
         const ADMIN_EMAIL = "amministrazione@alley33.it";
@@ -106,6 +133,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         const loginView = document.getElementById('admin-login-view');
         const dashboardView = document.getElementById('admin-dashboard-view');
@@ -119,38 +147,36 @@
         const userDetailPlaceholder = document.getElementById('user-detail-placeholder');
         const searchInput = document.getElementById('search-user');
         const exportButton = document.getElementById('export-button');
+        const adminTabButtons = document.querySelectorAll('.admin-tab-button');
+        const clientiTabContent = document.getElementById('clienti-tab-content');
+        const impostazioniTabContent = document.getElementById('impostazioni-tab-content');
         
+        const logoNeroUpload = document.getElementById('logo-nero-upload');
+        const logoBiancoUpload = document.getElementById('logo-bianco-upload');
+        const logoNeroPreview = document.getElementById('logo-nero-preview');
+        const logoBiancoPreview = document.getElementById('logo-bianco-preview');
+        const privacyPolicyEditor = document.getElementById('privacy-policy-editor');
+        const saveSettingsButton = document.getElementById('save-settings-button');
+
         let allUsersData = [];
         let selectedUserId = null;
 
-        function showError(message) {
-            adminErrorMessage.textContent = message;
-            adminErrorMessage.classList.remove('hidden');
-        }
-
+        function showError(message) { adminErrorMessage.textContent = message; adminErrorMessage.classList.remove('hidden'); }
         async function handleAdminLogin() {
             const email = adminEmailInput.value;
             const password = adminPasswordInput.value;
             adminErrorMessage.classList.add('hidden');
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                showError("Credenziali non valide. Controlla email e password.");
-            }
+            try { await signInWithEmailAndPassword(auth, email, password); } 
+            catch (error) { showError("Credenziali non valide."); }
         }
         
         async function loadAllUsers() {
             try {
                 const querySnapshot = await getDocs(collection(db, "users"));
                 allUsersData = [];
-                querySnapshot.forEach((doc) => {
-                    allUsersData.push({ id: doc.id, ...doc.data() });
-                });
+                querySnapshot.forEach((doc) => allUsersData.push({ id: doc.id, ...doc.data() }));
                 renderUserList(allUsersData);
-            } catch (e) {
-                console.error("Errore nel caricare gli utenti: ", e);
-                alert("Impossibile caricare la lista utenti. Controlla le regole di Firestore.");
-            }
+            } catch (e) { console.error("Errore caricamento utenti: ", e); }
         }
 
         function renderUserList(users) {
@@ -168,44 +194,25 @@
             selectedUserId = userId;
             userDetailPlaceholder.classList.add('hidden');
             userDetailContent.classList.remove('hidden');
-
             const data = allUsersData.find(user => user.id === userId);
-
             if (data) {
                 document.getElementById('detail-name').textContent = `${data.name} ${data.surname}`;
                 document.getElementById('detail-email').textContent = data.email;
                 document.getElementById('detail-phone').textContent = `Cell: ${data.phone || 'N/D'}`;
                 document.getElementById('detail-points').textContent = data.points || 0;
-
-                const barcodeElement = document.getElementById('detail-barcode');
-                if (data.barcode && barcodeElement) {
-                    JsBarcode(barcodeElement, data.barcode, { format: "EAN13", width: 1.5, height: 60, displayValue: true, fontSize: 14 });
-                }
-
+                if (data.barcode) JsBarcode("#detail-barcode", data.barcode, { format: "EAN13", width: 1.5, height: 60, displayValue: true, fontSize: 14 });
+                
                 const historyListAdmin = document.getElementById('history-list-admin');
                 historyListAdmin.innerHTML = '';
                 if (data.history && data.history.length > 0) {
                     [...data.history].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
                         const li = document.createElement('li');
-                        li.className = 'flex justify-between items-center text-sm p-2 rounded ' + (item.type === 'add' ? 'bg-green-50' : 'bg-yellow-50');
-                        
-                        // CORREZIONE: Usa una combinazione di ID o data per rendere ogni transazione identificabile
+                        li.className = 'flex justify-between items-center text-sm p-2 rounded ' + (item.type === 'add' ? 'bg-green-50' : 'bg-red-50');
                         const transactionIdentifier = item.id || item.date;
-
-                        li.innerHTML = `
-                            <span>
-                                <strong>${item.type === 'add' ? '+' : '-'}${item.points} punti</strong>: ${item.description} 
-                                <span class="text-gray-500 ml-2">(${new Date(item.date).toLocaleDateString('it-IT')})</span>
-                            </span>
-                            <button class="delete-transaction-btn text-red-500 hover:text-red-700" data-transaction-id='${transactionIdentifier}'>
-                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                            </button>
-                        `;
+                        li.innerHTML = `<span><strong>${item.type === 'add' ? '+' : '-'}${item.points} p.</strong>: ${item.description} <span class="text-gray-500 ml-2">(${new Date(item.date).toLocaleDateString('it-IT')})</span></span><button class="delete-transaction-btn text-red-500 hover:text-red-700" data-transaction-id='${transactionIdentifier}'><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>`;
                         historyListAdmin.appendChild(li);
                     });
-                } else {
-                    historyListAdmin.innerHTML = '<li class="text-gray-400">Nessuna transazione.</li>';
-                }
+                } else { historyListAdmin.innerHTML = '<li class="text-gray-400">Nessuna transazione.</li>'; }
             }
         }
 
@@ -213,126 +220,115 @@
             if (!selectedUserId) return;
             const points = parseInt(document.getElementById('points-input').value);
             const description = document.getElementById('description-input').value;
-
-            if (isNaN(points) || points <= 0) { return alert("Inserisci un numero di punti valido."); }
-            if (!description) { return alert("Inserisci una descrizione per la transazione."); }
-
+            if (isNaN(points) || points <= 0 || !description) return alert("Inserisci punti e descrizione validi.");
             const userDocRef = doc(db, "users", selectedUserId);
-            const newTransaction = {
-                id: Date.now().toString(),
-                date: new Date().toISOString(),
-                points: points,
-                type: pointsToAdd > 0 ? 'add' : 'spend',
-                description: description
-            };
-
+            const newTransaction = { id: Date.now().toString(), date: new Date().toISOString(), points, type: pointsToAdd > 0 ? 'add' : 'spend', description };
             try {
-                await updateDoc(userDocRef, {
-                    points: increment(pointsToAdd),
-                    history: arrayUnion(newTransaction)
-                });
-
+                await updateDoc(userDocRef, { points: increment(pointsToAdd), history: arrayUnion(newTransaction) });
                 const userToUpdate = allUsersData.find(u => u.id === selectedUserId);
                 if (userToUpdate) {
                     userToUpdate.points += pointsToAdd;
                     if (!userToUpdate.history) userToUpdate.history = [];
                     userToUpdate.history.push(newTransaction);
                 }
-                
                 document.getElementById('points-input').value = '';
                 document.getElementById('description-input').value = '';
                 displayUserDetails(selectedUserId);
-
-            } catch (e) {
-                console.error("Errore nell'aggiornare i punti: ", e);
-                alert("Si è verificato un errore.");
-            }
+            } catch (e) { console.error("Errore aggiornamento punti: ", e); }
         }
 
         async function handleDeleteTransaction(e) {
             const deleteButton = e.target.closest('.delete-transaction-btn');
             if (!deleteButton) return;
-
             const transactionId = deleteButton.dataset.transactionId;
-            if (!selectedUserId || !transactionId) return;
-
-            if (!confirm("Sei sicuro di voler eliminare questa transazione? L'azione è irreversibile.")) return;
-
+            if (!selectedUserId || !transactionId || !confirm("Sei sicuro?")) return;
             const userToUpdate = allUsersData.find(u => u.id === selectedUserId);
-            // CORREZIONE: Cerca la transazione usando sia l'ID (per le nuove) sia la data (per le vecchie)
-            const transactionToDelete = userToUpdate?.history.find(t => (t.id === transactionId) || (t.date === transactionId));
-
-            if (!transactionToDelete) {
-                alert("Impossibile trovare la transazione da eliminare. Ricarica la pagina e riprova.");
-                return;
-            }
-
+            const transactionToDelete = userToUpdate?.history.find(t => (t.id || t.date) === transactionId);
+            if (!transactionToDelete) return alert("Transazione non trovata.");
             const pointsToReverse = transactionToDelete.type === 'add' ? -transactionToDelete.points : transactionToDelete.points;
             const userDocRef = doc(db, "users", selectedUserId);
-
             try {
-                await updateDoc(userDocRef, {
-                    points: increment(pointsToReverse),
-                    history: arrayRemove(transactionToDelete)
-                });
-
+                await updateDoc(userDocRef, { points: increment(pointsToReverse), history: arrayRemove(transactionToDelete) });
                 userToUpdate.points += pointsToReverse;
                 userToUpdate.history = userToUpdate.history.filter(t => (t.id || t.date) !== transactionId);
-                
                 displayUserDetails(selectedUserId);
-
-            } catch (error) {
-                console.error("Errore durante l'eliminazione della transazione:", error);
-                alert("Si è verificato un errore durante l'eliminazione.");
-            }
+            } catch (error) { console.error("Errore eliminazione transazione:", error); }
         }
 
         function filterUsers() {
             const searchTerm = searchInput.value.toLowerCase();
-            const filteredUsers = allUsersData.filter(user => 
-                (user.name && user.name.toLowerCase().includes(searchTerm)) ||
-                (user.surname && user.surname.toLowerCase().includes(searchTerm)) ||
-                (user.email && user.email.toLowerCase().includes(searchTerm)) ||
-                (user.barcode && user.barcode.includes(searchTerm))
-            );
+            const filteredUsers = allUsersData.filter(user => Object.values(user).some(val => String(val).toLowerCase().includes(searchTerm)));
             renderUserList(filteredUsers);
         }
 
         function exportToCsv() {
             const headers = ["Nome", "Cognome", "Email", "Cellulare", "Punti Saldo", "Data Registrazione", "Barcode"];
             const csvRows = [headers.join(',')];
-
             for (const user of allUsersData) {
-                const values = [
-                    `"${user.name || ''}"`,
-                    `"${user.surname || ''}"`,
-                    `"${user.email || ''}"`,
-                    `"${user.phone || ''}"`,
-                    user.points || 0,
-                    user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('it-IT') : '',
-                    `"${user.barcode || ''}"`
-                ];
+                const values = [`"${user.name||''}"`,`"${user.surname||''}"`,`"${user.email||''}"`,`"${user.phone||''}"`,user.points||0,user.registrationDate?new Date(user.registrationDate).toLocaleDateString('it-IT'):'',`"${user.barcode||''}"`];
                 csvRows.push(values.join(','));
             }
-
-            const csvString = csvRows.join('\n');
-            const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
+            const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
             const a = document.createElement("a");
-            a.setAttribute("href", url);
-            a.setAttribute("download", "clienti_alley33.csv");
+            a.href = URL.createObjectURL(blob);
+            a.download = "clienti_alley33.csv";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
         }
+
+        async function loadSettings() {
+            const settingsRef = doc(db, "settings", "appConfig");
+            const docSnap = await getDoc(settingsRef);
+            if (docSnap.exists()) {
+                const settings = docSnap.data();
+                privacyPolicyEditor.value = settings.privacyPolicy || '';
+                logoNeroPreview.src = settings.logoNeroUrl || '';
+                logoBiancoPreview.src = settings.logoBiancoUrl || '';
+            }
+        }
+
+        async function uploadFile(file, path) {
+            if (!file) return null;
+            const storageRef = ref(storage, path);
+            await uploadBytes(storageRef, file);
+            return await getDownloadURL(storageRef);
+        }
+
+        async function saveSettings() {
+            saveSettingsButton.textContent = 'Salvataggio...';
+            saveSettingsButton.disabled = true;
+            try {
+                const logoNeroUrl = await uploadFile(logoNeroUpload.files[0], 'settings/logo-nero.png');
+                const logoBiancoUrl = await uploadFile(logoBiancoUpload.files[0], 'settings/logo-bianco.png');
+                const settingsData = { privacyPolicy: privacyPolicyEditor.value };
+                if (logoNeroUrl) settingsData.logoNeroUrl = logoNeroUrl;
+                if (logoBiancoUrl) settingsData.logoBiancoUrl = logoBiancoUrl;
+                await setDoc(doc(db, "settings", "appConfig"), settingsData, { merge: true });
+                alert('Impostazioni salvate!');
+                await loadSettings();
+            } catch (error) { console.error("Errore salvataggio impostazioni:", error); } 
+            finally { saveSettingsButton.textContent = 'Salva Impostazioni'; saveSettingsButton.disabled = false; }
+        }
+
+        adminTabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.dataset.tab;
+                adminTabButtons.forEach(btn => btn.classList.replace('border-green-600', 'text-gray-500') || btn.classList.replace('text-green-600', 'text-gray-500'));
+                button.classList.add('border-green-600', 'text-green-600');
+                clientiTabContent.classList.toggle('hidden', tab !== 'clienti');
+                impostazioniTabContent.classList.toggle('hidden', tab !== 'impostazioni');
+            });
+        });
 
         onAuthStateChanged(auth, (user) => {
             if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                 loginView.classList.add('hidden');
                 dashboardView.classList.remove('hidden');
                 loadAllUsers();
+                loadSettings();
             } else {
-                if (user) { signOut(auth); }
+                if (user) signOut(auth);
                 loginView.classList.remove('hidden');
                 dashboardView.classList.add('hidden');
             }
@@ -343,23 +339,17 @@
         userList.addEventListener('click', (e) => {
             const li = e.target.closest('li');
             if (li && li.dataset.userId) {
-                document.querySelectorAll('#user-list li').forEach(item => item.classList.remove('bg-indigo-100'));
-                li.classList.add('bg-indigo-100');
+                document.querySelectorAll('#user-list li').forEach(item => item.classList.remove('bg-green-100'));
+                li.classList.add('bg-green-100');
                 displayUserDetails(li.dataset.userId);
             }
         });
         searchInput.addEventListener('input', filterUsers);
         exportButton.addEventListener('click', exportToCsv);
         document.getElementById('history-list-admin').addEventListener('click', handleDeleteTransaction);
-        document.getElementById('add-points-button').addEventListener('click', () => {
-            const points = parseInt(document.getElementById('points-input').value);
-            if (!isNaN(points) && points > 0) updatePoints(points);
-        });
-        document.getElementById('remove-points-button').addEventListener('click', () => {
-            const points = parseInt(document.getElementById('points-input').value);
-            if (!isNaN(points) && points > 0) updatePoints(-points);
-        });
-
+        document.getElementById('add-points-button').addEventListener('click', () => updatePoints(parseInt(document.getElementById('points-input').value)));
+        document.getElementById('remove-points-button').addEventListener('click', () => updatePoints(-parseInt(document.getElementById('points-input').value)));
+        saveSettingsButton.addEventListener('click', saveSettings);
     </script>
 </body>
 </html>
