@@ -99,15 +99,23 @@
         
         console.log("--- DEBUG: Script caricato ---");
 
-        // CONTROLLA CHE QUESTE SIANO LE CHIAVI DEL NUOVO PROGETTO
-        const firebaseConfig = {
-            apiKey: "...", // INSERISCI QUI LE TUE NUOVE CHIAVI
-            authDomain: "...",
-            projectId: "...",
-            storageBucket: "...",
-            messagingSenderId: "...",
-            appId: "..."
-        };
+        // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyANwokA9yGsphGB6sjLwga4s8jHr1Z1gvY",
+  authDomain: "alley33-card-v2.firebaseapp.com",
+  projectId: "alley33-card-v2",
+  storageBucket: "alley33-card-v2.firebasestorage.app",
+  messagingSenderId: "892370144503",
+  appId: "1:892370144503:web:a4aab865883cb3c50f17f2"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
         
         // CONTROLLA CHE QUESTA EMAIL SIA ESATTAMENTE IDENTICA A QUELLA SU FIREBASE
         const ADMIN_EMAIL = "amministrazione@alley33.it";
