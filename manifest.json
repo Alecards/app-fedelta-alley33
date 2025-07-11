@@ -1,10 +1,10 @@
 {
   "name": "Alley33 Card",
   "short_name": "Alley33",
-  "start_url": "./app.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#4f46e5",
+  "theme_color": "#16a34a",
   "description": "La carta fedeltà di Alley33, sempre con te.",
   "icons": [
     {
