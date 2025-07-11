@@ -1,8 +1,9 @@
-// Aumenta la versione della cache per forzare l'aggiornamento
-const CACHE_NAME = 'alley33-card-v4'; 
+// Aumentata la versione della cache per forzare l'aggiornamento
+const CACHE_NAME = 'alley33-card-v5'; 
 const urlsToCache = [
   './', // Cache della pagina principale
   './app.html',
+  './manifest.json', // Aggiunto il manifest alla cache
   './Logo_Alley_nero.png',
   './Logo_Alley_bianco.png',
   './icon-192x192.png',
@@ -38,7 +39,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Evento fetch: intercetta le richieste di rete
+// Evento fetch: strategia "Cache first, then network"
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
