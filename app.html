@@ -17,7 +17,7 @@
         body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         .hidden { display: none; }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 50; }
-        .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #4f46e5; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #16a34a; /* Verde Alley33 */ width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #welcome-view {
             background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://www.alley33.it/cdn/shop/files/alley-33-negozio-di-abbigliamento-a-rovigo.jpg?v=1683192017&width=1500');
@@ -34,12 +34,11 @@
 
         <div id="welcome-view" class="flex flex-col justify-between h-screen p-8 text-white hidden">
             <div class="text-center">
-                <!-- CORREZIONE: Usato il logo BIANCO per la schermata scura -->
                 <img src="./Logo_Alley_bianco.png" alt="Logo Alley33" class="w-48 mx-auto">
             </div>
             <div class="text-center"><h1 class="text-4xl font-extrabold">Benvenuto</h1><p class="mt-2">La tua fidelity card, sempre con te.</p></div>
             <div class="space-y-4">
-                <button id="install-pwa-button" class="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 hidden">Installa App</button>
+                <button id="install-pwa-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 hidden">Installa App</button>
                 <button id="go-to-register-button" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200">Sei un nuovo utente? Registrati</button>
                 <button id="go-to-login-button" class="w-full bg-transparent border border-white text-white font-bold py-3 rounded-lg hover:bg-white hover:text-black">Sei già registrato? Accedi</button>
             </div>
@@ -53,10 +52,10 @@
             <div class="space-y-4">
                 <input type="email" id="login-email-input" placeholder="Email" class="w-full px-4 py-3 border rounded-lg">
                 <input type="password" id="login-password-input" placeholder="Password" class="w-full px-4 py-3 border rounded-lg">
-                <button id="login-button" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700">Entra</button>
+                <button id="login-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Entra</button>
             </div>
-            <a href="#" id="go-to-recover-button" class="block text-center text-sm text-indigo-600 mt-4 hover:underline">Password dimenticata?</a>
-            <p id="login-error-message" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+            <a href="#" id="go-to-recover-button" class="block text-center text-sm text-green-600 mt-4 hover:underline">Password dimenticata?</a>
+            <p id="login-error-message" class="text-red-600 text-sm mt-4 text-center hidden"></p>
             <button class="back-to-welcome text-gray-500 text-sm mt-8 mx-auto block"> &larr; Torna alla home</button>
         </div>
 
@@ -72,12 +71,12 @@
                 <input type="tel" id="register-phone-input" placeholder="Cellulare" class="w-full px-4 py-3 border rounded-lg">
                 <input type="password" id="register-password-input" placeholder="Password (min. 6 caratteri)" class="w-full px-4 py-3 border rounded-lg">
                 <div class="space-y-3 pt-2">
-                    <div class="flex items-start"><input id="privacy-check" type="checkbox" class="h-5 w-5 mt-0.5"><label for="privacy-check" class="ml-3 text-sm">Dichiaro di aver letto la <a href="#" id="open-privacy-policy" class="font-semibold text-indigo-600">Privacy Policy</a>.</label></div>
-                    <div class="flex items-start"><input id="marketing-check" type="checkbox" class="h-5 w-5 mt-0.5"><label for="marketing-check" class="ml-3 text-sm">Acconsento al marketing.</label></div>
+                    <div class="flex items-start"><input id="privacy-check" type="checkbox" class="h-5 w-5 mt-0.5 text-green-600 focus:ring-green-500"><label for="privacy-check" class="ml-3 text-sm">Dichiaro di aver letto la <a href="#" id="open-privacy-policy" class="font-semibold text-green-600">Privacy Policy</a>.</label></div>
+                    <div class="flex items-start"><input id="marketing-check" type="checkbox" class="h-5 w-5 mt-0.5 text-green-600 focus:ring-green-500"><label for="marketing-check" class="ml-3 text-sm">Acconsento al marketing.</label></div>
                 </div>
-                <button id="register-button" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg !mt-6">Registrati</button>
+                <button id="register-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg !mt-6 hover:bg-green-700">Registrati</button>
             </div>
-            <p id="register-error-message" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+            <p id="register-error-message" class="text-red-600 text-sm mt-4 text-center hidden"></p>
             <button class="back-to-welcome text-gray-500 text-sm mt-8 mx-auto block"> &larr; Torna alla home</button>
         </div>
 
@@ -89,7 +88,7 @@
             <p class="text-gray-600 mb-4 text-center">Inserisci la tua email e ti invieremo un link per reimpostare la password.</p>
             <div class="space-y-4">
                 <input type="email" id="recover-email-input" placeholder="La tua email di registrazione" class="w-full px-4 py-3 border rounded-lg">
-                <button id="recover-button" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg">Invia link</button>
+                <button id="recover-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Invia link</button>
             </div>
             <p id="recover-message" class="text-green-600 text-sm mt-4 text-center hidden"></p>
             <button class="back-to-welcome text-gray-500 text-sm mt-8 mx-auto block"> &larr; Torna alla home</button>
@@ -97,7 +96,6 @@
 
         <!-- Schermata Principale App -->
         <div id="main-app-view" class="hidden">
-            <!-- MODIFICA: Header con sfondo bianco e testo nero -->
             <header class="bg-white text-gray-800 p-4 flex justify-between items-center border-b">
                 <div id="welcome-message-container">
                     <!-- Contenuto generato da JavaScript -->
@@ -121,7 +119,7 @@
                 <button id="logout-button-main" class="w-full mt-8 bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700">Esci</button>
             </div>
         </template>
-        <template id="shop-template"><div class="text-center pt-16"><h3 class="text-2xl font-bold text-gray-800 mb-4">Visita il nostro Shop Online</h3><p class="text-gray-600 mb-8 max-w-xs mx-auto">Clicca per aprire il sito in una nuova pagina.</p><a href="https://www.alley33.it" target="_blank" class="inline-block bg-indigo-600 text-white font-bold py-4 px-10 rounded-lg shadow-md">Vai ad Alley33.it</a></div></template>
+        <template id="shop-template"><div class="text-center pt-16"><h3 class="text-2xl font-bold text-gray-800 mb-4">Visita il nostro Shop Online</h3><p class="text-gray-600 mb-8 max-w-xs mx-auto">Clicca per aprire il sito in una nuova pagina.</p><a href="https://www.alley33.it" target="_blank" class="inline-block bg-green-600 text-white font-bold py-4 px-10 rounded-lg shadow-md hover:bg-green-700">Vai ad Alley33.it</a></div></template>
         <div id="privacy-modal" class="modal-overlay hidden"><div class="bg-white rounded-lg shadow-xl m-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"><div class="p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold">Informativa Privacy</h3><button id="close-privacy-policy" class="text-gray-500">&times;</button></div><div class="prose prose-sm"><h4>Titolare del Trattamento</h4><p>Alley33 S.r.l., ...</p></div></div></div></div>
     </div>
 
@@ -230,7 +228,7 @@
                 recoverMessage.classList.remove('hidden');
             } catch (error) {
                 recoverMessage.textContent = 'Errore. Assicurati che l\'email sia corretta.';
-                recoverMessage.classList.add('text-red-500');
+                recoverMessage.classList.add('text-red-600');
                 recoverMessage.classList.remove('hidden');
             }
         }
@@ -274,12 +272,12 @@
         }
 
         function setupNavigation() {
-            navContainer.innerHTML = `<button data-tab="card" class="tab-button flex-1 py-3 text-center text-indigo-600 font-semibold border-t-4 border-indigo-600">Card</button><button data-tab="shop" class="tab-button flex-1 py-3 text-center text-gray-500 font-semibold">Shop</button>`;
+            navContainer.innerHTML = `<button data-tab="card" class="tab-button flex-1 py-3 text-center text-green-600 font-semibold border-t-4 border-green-600">Card</button><button data-tab="shop" class="tab-button flex-1 py-3 text-center text-gray-500 font-semibold">Shop</button>`;
             navContainer.querySelectorAll('.tab-button').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const tab = e.currentTarget.dataset.tab;
-                    navContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('text-indigo-600', 'border-t-4', 'border-indigo-600'));
-                    e.currentTarget.classList.add('text-indigo-600', 'border-t-4', 'border-indigo-600');
+                    navContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('text-green-600', 'border-t-4', 'border-green-600'));
+                    e.currentTarget.classList.add('text-green-600', 'border-t-4', 'border-green-600');
                     mainContent.innerHTML = '';
                     if (tab === 'card') { getDoc(doc(db, "users", auth.currentUser.uid)).then(docSnap => { if (docSnap.exists()) renderApp(docSnap.data()) }); } 
                     else if (tab === 'shop') { mainContent.appendChild(document.getElementById('shop-template').content.cloneNode(true)); }
