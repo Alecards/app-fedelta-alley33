@@ -8,7 +8,7 @@ const urlsToCache = [
   './Logo_Alley_bianco.png',
   './icon-192x192.png',
   './icon-512x512.png',
-  // LINK VIDEO AGGIORNATO
+  // URL del video inserita correttamente
   'https://firebasestorage.googleapis.com/v0/b/alley33-card-v2.firebasestorage.app/o/WelcomeVideo.mp4?alt=media&token=881e2ce2-a3f2-448a-aeed-7308ac905b81'
 ];
 
