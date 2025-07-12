@@ -119,7 +119,6 @@
         import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
         
-        // CORREZIONE: Inserite le chiavi Firebase corrette fornite dall'utente.
         const firebaseConfig = {
             apiKey: "AIzaSyANwokA9yGsphGB6sjLwga4s8jHr1Z1gvY",
             authDomain: "alley33-card-v2.firebaseapp.com",
@@ -129,6 +128,7 @@
             appId: "1:892370144503:web:a4aab865883cb3c50f17f2"
         };
         
+        // ASSICURATI CHE QUESTA EMAIL SIA IDENTICA A QUELLA SU FIREBASE, MAIUSCOLE/MINUSCOLE INCLUSE
         const ADMIN_EMAIL = "amministrazione@alley33.it";
 
         const app = initializeApp(firebaseConfig);
@@ -364,14 +364,25 @@
             });
         });
 
+        // MODIFICATO: Aggiunto logging per il debug
         onAuthStateChanged(auth, (user) => {
-            if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                loginView.classList.add('hidden');
-                dashboardView.classList.remove('hidden');
-                loadAllUsers();
-                loadSettings();
+            console.log("Stato autenticazione cambiato. Utente:", user ? user.email : 'Nessuno');
+            if (user) {
+                const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+                console.log(`L'utente è admin? ${isAdmin}. Confronto: '${user.email.toLowerCase()}' vs '${ADMIN_EMAIL.toLowerCase()}'`);
+                
+                if (isAdmin) {
+                    console.log("Accesso come admin CONFERMATO. Mostro la dashboard.");
+                    loginView.classList.add('hidden');
+                    dashboardView.classList.remove('hidden');
+                    loadAllUsers();
+                    loadSettings();
+                } else {
+                    console.warn("Accesso NEGATO. L'utente non è l'admin. Logout in corso.");
+                    signOut(auth);
+                }
             } else {
-                if (user) { signOut(auth); }
+                console.log("Nessun utente loggato. Mostro la pagina di login.");
                 loginView.classList.remove('hidden');
                 dashboardView.classList.add('hidden');
             }
