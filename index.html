@@ -285,22 +285,16 @@
         }
 
         async function requestNotificationPermission(userId) {
-            console.log('Richiesta permesso notifiche...');
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
                     console.log('Permesso notifiche concesso.');
-                    const currentToken = await getToken(messaging, { vapidKey: 'BDIj92g3iA8B...tuachiave..._sY' }); // INSERISCI QUI LA TUA CHIAVE VAPID
+                    // CHIAVE VAPID INSERITA CORRETTAMENTE
+                    const currentToken = await getToken(messaging, { vapidKey: 'BDFJ18aEY2qay-fNih2CbXfO-r5M5iC7UG37YRrzutLJBQ9wBf_xplhGPFj09fIcPRp_ZVpXC-oVaEiMk4QAR8w' });
                     if (currentToken) {
-                        console.log('Token FCM ottenuto:', currentToken);
                         const userDocRef = doc(db, "users", userId);
                         await updateDoc(userDocRef, { fcmToken: currentToken });
-                        console.log('Token salvato nel profilo utente.');
-                    } else {
-                        console.log('Nessun token di registrazione disponibile.');
                     }
-                } else {
-                    console.log('Permesso notifiche non concesso.');
                 }
             } catch (error) {
                 console.error('Errore durante la richiesta del permesso o del token:', error);
