@@ -1,4 +1,5 @@
-const CACHE_NAME = 'alley33-card-v11'; 
+// Aumentata la versione della cache
+const CACHE_NAME = 'alley33-card-v10'; 
 const urlsToCache = [
   './', 
   './index.html',
@@ -9,6 +10,36 @@ const urlsToCache = [
   './icon-512x512.png',
   'https://firebasestorage.googleapis.com/v0/b/alley33-card-v2.firebasestorage.app/o/WelcomeVideo.mp4?alt=media&token=881e2ce2-a3f2-448a-aeed-7308ac905b81'
 ];
+
+// Importa gli script di Firebase
+importScripts("https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging-compat.js");
+
+// Inizializza Firebase nel Service Worker
+const firebaseConfig = {
+    apiKey: "AIzaSyANwokA9yGsphGB6sjLwga4s8jHr1Z1gvY",
+    authDomain: "alley33-card-v2.firebaseapp.com",
+    projectId: "alley33-card-v2",
+    storageBucket: "alley33-card-v2.appspot.com",
+    messagingSenderId: "892370144503",
+    appId: "1:892370144503:web:a4aab865883cb3c50f17f2"
+};
+
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+
+// Gestisce le notifiche in background
+messaging.onBackgroundMessage((payload) => {
+  console.log('[sw.js] Ricevuto messaggio in background. ', payload);
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: './icon-192x192.png'
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -36,8 +67,6 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request);
-      })
+      .then(response => response || fetch(event.request))
   );
 });
