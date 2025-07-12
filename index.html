@@ -137,12 +137,11 @@
         import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
         import { getMessaging, getToken, isSupported } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging.js";
 
-        // CORREZIONE: Inserito il valore corretto per storageBucket
         const firebaseConfig = {
             apiKey: "AIzaSyANwokA9yGsphGB6sjLwga4s8jHr1Z1gvY",
             authDomain: "alley33-card-v2.firebaseapp.com",
             projectId: "alley33-card-v2",
-            storageBucket: "alley33-card-v2.firebasestorage.app",
+            storageBucket: "alley33-card-v2.appspot.com",
             messagingSenderId: "892370144503",
             appId: "1:892370144503:web:a4aab865883cb3c50f17f2"
         };
@@ -222,7 +221,8 @@
                 await setPersistence(auth, browserLocalPersistence);
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-                await setDoc(doc(db, "users", user.uid), { name, surname, email, phone, points: 0, barcode: generateEan13(), history: [], marketingConsent: marketingCheck.checked, registrationDate: new Date().toISOString() });
+                // AGGIUNTO: Salvataggio esplicito del consenso privacy
+                await setDoc(doc(db, "users", user.uid), { name, surname, email, phone, points: 0, barcode: generateEan13(), history: [], privacyConsent: privacyCheck.checked, marketingConsent: marketingCheck.checked, registrationDate: new Date().toISOString() });
             } catch (error) {
                 registerErrorMessage.textContent = error.code === 'auth/email-already-in-use' ? 'Questa email è già registrata.' : 'Errore durante la registrazione.';
                 registerErrorMessage.classList.remove('hidden');
@@ -282,8 +282,9 @@
                 });
             } else { historyList.innerHTML = '<li class="text-center text-gray-500">Nessuna transazione.</li>'; }
 
+            // Logica per mostrare il banner delle notifiche
             const bannerContainer = mainContent.querySelector('#notifications-banner-container');
-            if (Notification.permission === 'default') {
+            if (bannerContainer && Notification.permission === 'default' && !userData.fcmToken) {
                 const bannerTemplate = document.getElementById('notifications-banner-template').content.cloneNode(true);
                 bannerContainer.appendChild(bannerTemplate);
                 bannerContainer.querySelector('#enable-notifications-button').addEventListener('click', () => {
@@ -307,16 +308,24 @@
         }
 
         async function requestNotificationPermission(userId) {
-            if (!messaging) { return; }
+            if (!messaging) {
+                console.log('Servizio di messaggistica non supportato da questo browser.');
+                return;
+            }
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
                     const banner = document.getElementById('notifications-banner');
                     if(banner) banner.remove();
+                    
                     const currentToken = await getToken(messaging, { vapidKey: 'BDFJ18aEY2qay-fNih2CbXfO-r5M5iC7UG37YRrzutLJBQ9wBf_xplhGPFj09fIcPRp_ZVpXC-oVaEiMk4QAR8w' });
                     if (currentToken) {
-                        await updateDoc(doc(db, "users", userId), { fcmToken: currentToken });
+                        const userDocRef = doc(db, "users", userId);
+                        await updateDoc(userDocRef, { fcmToken: currentToken });
+                        console.log('Token salvato nel profilo utente.');
                     }
+                } else {
+                    console.log('Permesso notifiche non concesso.');
                 }
             } catch (error) {
                 console.error('Errore durante la richiesta del permesso o del token:', error);
