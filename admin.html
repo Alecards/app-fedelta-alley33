@@ -95,12 +95,12 @@
                         <div class="bg-white p-4 rounded-lg border">
                             <label for="logo-nero-upload" class="block text-sm font-medium text-gray-700">Logo Nero (per sfondi chiari)</label>
                             <input type="file" id="logo-nero-upload" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"/>
-                            <img id="logo-nero-preview" class="mt-4 h-12 bg-gray-200 p-1" src="" alt="Anteprima Logo Nero">
+                            <img id="logo-nero-preview" class="mt-4 h-12" src="" alt="Anteprima Logo Nero">
                         </div>
                         <div class="bg-gray-800 p-4 rounded-lg border">
                             <label for="logo-bianco-upload" class="block text-sm font-medium text-white">Logo Bianco (per sfondi scuri)</label>
                             <input type="file" id="logo-bianco-upload" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600"/>
-                            <img id="logo-bianco-preview" class="mt-4 h-12 p-1" src="" alt="Anteprima Logo Bianco">
+                            <img id="logo-bianco-preview" class="mt-4 h-12" src="" alt="Anteprima Logo Bianco">
                         </div>
                     </div>
                 </div>
@@ -119,27 +119,22 @@
         import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
         
-        // --- 1. CONFIGURAZIONE FIREBASE ---
-        // SOSTITUISCI QUESTO BLOCCO CON LE CHIAVI DEL TUO NUOVO PROGETTO FIREBASE
         const firebaseConfig = {
-            apiKey: "AIzaSyANwokA9yGsphGB6sjLwga4s8jHr1Z1gvY",
-            authDomain: "alley33-card-v2.firebaseapp.com",
-            projectId: "alley33-card-v2",
-            storageBucket: "alley33-card-v2.appspot.com",
-            messagingSenderId: "892370144503",
-            appId: "1:892370144503:web:a4aab865883cb3c50f17f2"
+            apiKey: "AIzaSyBF38Gm35yJc4kBA8OiI41XQe7fyNQbvlE",
+            authDomain: "app-fedelta-alley33.firebaseapp.com",
+            projectId: "app-fedelta-alley33",
+            storageBucket: "app-fedelta-alley33.appspot.com",
+            messagingSenderId: "773801878167",
+            appId: "1:773801878167:web:79380a8528b89315fdffd2"
         };
         
-        // ASSICURATI CHE QUESTA EMAIL SIA IDENTICA A QUELLA CREATA SU FIREBASE
         const ADMIN_EMAIL = "amministrazione@alley33.it";
 
-        // --- 2. INIZIALIZZAZIONE ---
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // --- 3. RIFERIMENTI AGLI ELEMENTI HTML ---
         const loginView = document.getElementById('admin-login-view');
         const dashboardView = document.getElementById('admin-dashboard-view');
         const adminEmailInput = document.getElementById('admin-email');
@@ -155,6 +150,7 @@
         const adminTabButtons = document.querySelectorAll('.admin-tab-button');
         const clientiTabContent = document.getElementById('clienti-tab-content');
         const impostazioniTabContent = document.getElementById('impostazioni-tab-content');
+        
         const logoNeroUpload = document.getElementById('logo-nero-upload');
         const logoBiancoUpload = document.getElementById('logo-bianco-upload');
         const logoNeroPreview = document.getElementById('logo-nero-preview');
@@ -165,7 +161,6 @@
         let allUsersData = [];
         let selectedUserId = null;
 
-        // --- 4. FUNZIONI ---
         function showError(message) {
             adminErrorMessage.textContent = message;
             adminErrorMessage.classList.remove('hidden');
@@ -178,10 +173,10 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
-                showError("Credenziali non valide. Controlla email e password.");
+                showError("Credenziali non valide.");
             }
         }
-        
+
         async function loadAllUsers() {
             try {
                 const querySnapshot = await getDocs(collection(db, "users"));
@@ -192,7 +187,7 @@
                 renderUserList(allUsersData);
             } catch (e) {
                 console.error("Errore nel caricare gli utenti: ", e);
-                alert("Impossibile caricare la lista utenti. Controlla le regole di Firestore.");
+                alert("Impossibile caricare la lista utenti.");
             }
         }
 
@@ -200,7 +195,7 @@
             userList.innerHTML = '';
             users.sort((a, b) => (a.surname || '').localeCompare(b.surname || '')).forEach(userData => {
                 const li = document.createElement('li');
-                li.className = 'p-4 hover:bg-gray-50 cursor-pointer';
+                li.className = 'p-4 hover:bg-green-50 cursor-pointer';
                 li.dataset.userId = userData.id;
                 li.innerHTML = `<p class="font-semibold text-gray-800">${userData.name} ${userData.surname}</p><p class="text-sm text-gray-500">${userData.email}</p>`;
                 userList.appendChild(li);
@@ -212,24 +207,28 @@
             userDetailPlaceholder.classList.add('hidden');
             userDetailContent.classList.remove('hidden');
             const data = allUsersData.find(user => user.id === userId);
-            if (data) {
-                document.getElementById('detail-name').textContent = `${data.name} ${data.surname}`;
-                document.getElementById('detail-email').textContent = data.email;
-                document.getElementById('detail-phone').textContent = `Cell: ${data.phone || 'N/D'}`;
-                document.getElementById('detail-points').textContent = data.points || 0;
-                if (data.barcode) JsBarcode("#detail-barcode", data.barcode, { format: "EAN13", width: 1.5, height: 60, displayValue: true, fontSize: 14 });
-                
-                const historyListAdmin = document.getElementById('history-list-admin');
-                historyListAdmin.innerHTML = '';
-                if (data.history && data.history.length > 0) {
-                    [...data.history].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
-                        const li = document.createElement('li');
-                        li.className = 'flex justify-between items-center text-sm p-2 rounded ' + (item.type === 'add' ? 'bg-green-50' : 'bg-red-50');
-                        const transactionIdentifier = item.id || item.date;
-                        li.innerHTML = `<span><strong>${item.type === 'add' ? '+' : '-'}${item.points} p.</strong>: ${item.description} <span class="text-gray-500 ml-2">(${new Date(item.date).toLocaleDateString('it-IT')})</span></span><button class="delete-transaction-btn text-red-500 hover:text-red-700" data-transaction-id='${transactionIdentifier}'><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>`;
-                        historyListAdmin.appendChild(li);
-                    });
-                } else { historyListAdmin.innerHTML = '<li class="text-gray-400">Nessuna transazione.</li>'; }
+            if (!data) return;
+
+            document.getElementById('detail-name').textContent = `${data.name} ${data.surname}`;
+            document.getElementById('detail-email').textContent = data.email;
+            document.getElementById('detail-phone').textContent = `Cell: ${data.phone || 'N/D'}`;
+            document.getElementById('detail-points').textContent = data.points || 0;
+            const barcodeElement = document.getElementById('detail-barcode');
+            if (data.barcode) {
+                JsBarcode(barcodeElement, data.barcode, { format: "EAN13", width: 1.5, height: 60, displayValue: true, fontSize: 14 });
+            }
+            const historyListAdmin = document.getElementById('history-list-admin');
+            historyListAdmin.innerHTML = '';
+            if (data.history && data.history.length > 0) {
+                [...data.history].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center text-sm p-2 rounded ' + (item.type === 'add' ? 'bg-green-50' : 'bg-red-50');
+                    const transactionIdentifier = item.id || item.date;
+                    li.innerHTML = `<span><strong>${item.type === 'add' ? '+' : '-'}${item.points} punti</strong>: ${item.description} <span class="text-gray-500 ml-2">(${new Date(item.date).toLocaleDateString('it-IT')})</span></span><button class="delete-transaction-btn text-red-500 hover:text-red-700" data-transaction-id='${transactionIdentifier}'><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>`;
+                    historyListAdmin.appendChild(li);
+                });
+            } else {
+                historyListAdmin.innerHTML = '<li class="text-gray-400">Nessuna transazione.</li>';
             }
         }
 
@@ -237,7 +236,8 @@
             if (!selectedUserId) return;
             const points = parseInt(document.getElementById('points-input').value);
             const description = document.getElementById('description-input').value;
-            if (isNaN(points) || points <= 0 || !description) return alert("Inserisci punti e descrizione validi.");
+            if (isNaN(points) || points <= 0) return alert("Inserisci un numero di punti valido.");
+            if (!description) return alert("Inserisci una descrizione.");
             const userDocRef = doc(db, "users", selectedUserId);
             const newTransaction = { id: Date.now().toString(), date: new Date().toISOString(), points, type: pointsToAdd > 0 ? 'add' : 'spend', description };
             try {
@@ -251,17 +251,21 @@
                 document.getElementById('points-input').value = '';
                 document.getElementById('description-input').value = '';
                 displayUserDetails(selectedUserId);
-            } catch (e) { console.error("Errore aggiornamento punti: ", e); }
+            } catch (e) {
+                console.error("Errore nell'aggiornare i punti: ", e);
+                alert("Si è verificato un errore.");
+            }
         }
 
         async function handleDeleteTransaction(e) {
             const deleteButton = e.target.closest('.delete-transaction-btn');
             if (!deleteButton) return;
             const transactionId = deleteButton.dataset.transactionId;
-            if (!selectedUserId || !transactionId || !confirm("Sei sicuro?")) return;
+            if (!selectedUserId || !transactionId) return;
+            if (!confirm("Sei sicuro di voler eliminare questa transazione?")) return;
             const userToUpdate = allUsersData.find(u => u.id === selectedUserId);
             const transactionToDelete = userToUpdate?.history.find(t => (t.id || t.date) === transactionId);
-            if (!transactionToDelete) return alert("Transazione non trovata.");
+            if (!transactionToDelete) return alert("Impossibile trovare la transazione.");
             const pointsToReverse = transactionToDelete.type === 'add' ? -transactionToDelete.points : transactionToDelete.points;
             const userDocRef = doc(db, "users", selectedUserId);
             try {
@@ -269,12 +273,15 @@
                 userToUpdate.points += pointsToReverse;
                 userToUpdate.history = userToUpdate.history.filter(t => (t.id || t.date) !== transactionId);
                 displayUserDetails(selectedUserId);
-            } catch (error) { console.error("Errore eliminazione transazione:", error); }
+            } catch (error) {
+                console.error("Errore eliminazione transazione:", error);
+                alert("Errore durante l'eliminazione.");
+            }
         }
 
         function filterUsers() {
             const searchTerm = searchInput.value.toLowerCase();
-            const filteredUsers = allUsersData.filter(user => Object.values(user).some(val => String(val).toLowerCase().includes(searchTerm)));
+            const filteredUsers = allUsersData.filter(user => (user.name && user.name.toLowerCase().includes(searchTerm)) || (user.surname && user.surname.toLowerCase().includes(searchTerm)) || (user.email && user.email.toLowerCase().includes(searchTerm)) || (user.barcode && user.barcode.includes(searchTerm)));
             renderUserList(filteredUsers);
         }
 
@@ -282,13 +289,15 @@
             const headers = ["Nome", "Cognome", "Email", "Cellulare", "Punti Saldo", "Data Registrazione", "Barcode"];
             const csvRows = [headers.join(',')];
             for (const user of allUsersData) {
-                const values = [`"${user.name||''}"`,`"${user.surname||''}"`,`"${user.email||''}"`,`"${user.phone||''}"`,user.points||0,user.registrationDate?new Date(user.registrationDate).toLocaleDateString('it-IT'):'',`"${user.barcode||''}"`];
+                const values = [`"${user.name || ''}"`, `"${user.surname || ''}"`, `"${user.email || ''}"`, `"${user.phone || ''}"`, user.points || 0, user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('it-IT') : '', `"${user.barcode || ''}"`];
                 csvRows.push(values.join(','));
             }
-            const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const csvString = csvRows.join('\n');
+            const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = "clienti_alley33.csv";
+            a.setAttribute("href", url);
+            a.setAttribute("download", "clienti_alley33.csv");
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -300,8 +309,8 @@
             if (docSnap.exists()) {
                 const settings = docSnap.data();
                 privacyPolicyEditor.value = settings.privacyPolicy || '';
-                logoNeroPreview.src = settings.logoNeroUrl || '';
-                logoBiancoPreview.src = settings.logoBiancoUrl || '';
+                if(settings.logoNeroUrl) logoNeroPreview.src = settings.logoNeroUrl;
+                if(settings.logoBiancoUrl) logoBiancoPreview.src = settings.logoBiancoUrl;
             }
         }
 
@@ -316,16 +325,24 @@
             saveSettingsButton.textContent = 'Salvataggio...';
             saveSettingsButton.disabled = true;
             try {
-                const logoNeroUrl = await uploadFile(logoNeroUpload.files[0], 'settings/logo-nero.png');
-                const logoBiancoUrl = await uploadFile(logoBiancoUpload.files[0], 'settings/logo-bianco.png');
+                const logoNeroFile = logoNeroUpload.files[0];
+                const logoBiancoFile = logoBiancoUpload.files[0];
+                const logoNeroUrl = await uploadFile(logoNeroFile, 'settings/logo-nero.png');
+                const logoBiancoUrl = await uploadFile(logoBiancoFile, 'settings/logo-bianco.png');
                 const settingsData = { privacyPolicy: privacyPolicyEditor.value };
                 if (logoNeroUrl) settingsData.logoNeroUrl = logoNeroUrl;
                 if (logoBiancoUrl) settingsData.logoBiancoUrl = logoBiancoUrl;
-                await setDoc(doc(db, "settings", "appConfig"), settingsData, { merge: true });
+                const settingsRef = doc(db, "settings", "appConfig");
+                await setDoc(settingsRef, settingsData, { merge: true });
                 alert('Impostazioni salvate!');
                 await loadSettings();
-            } catch (error) { console.error("Errore salvataggio impostazioni:", error); } 
-            finally { saveSettingsButton.textContent = 'Salva Impostazioni'; saveSettingsButton.disabled = false; }
+            } catch (error) {
+                console.error("Errore salvataggio impostazioni:", error);
+                alert("Errore nel salvataggio.");
+            } finally {
+                saveSettingsButton.textContent = 'Salva Impostazioni';
+                saveSettingsButton.disabled = false;
+            }
         }
 
         adminTabButtons.forEach(button => {
@@ -348,7 +365,7 @@
                 loadAllUsers();
                 loadSettings();
             } else {
-                if (user) signOut(auth);
+                if (user) { signOut(auth); }
                 loginView.classList.remove('hidden');
                 dashboardView.classList.add('hidden');
             }
@@ -367,9 +384,10 @@
         searchInput.addEventListener('input', filterUsers);
         exportButton.addEventListener('click', exportToCsv);
         document.getElementById('history-list-admin').addEventListener('click', handleDeleteTransaction);
-        document.getElementById('add-points-button').addEventListener('click', () => updatePoints(parseInt(document.getElementById('points-input').value)));
-        document.getElementById('remove-points-button').addEventListener('click', () => updatePoints(-parseInt(document.getElementById('points-input').value)));
+        document.getElementById('add-points-button').addEventListener('click', () => { const points = parseInt(document.getElementById('points-input').value); if (!isNaN(points) && points > 0) updatePoints(points); });
+        document.getElementById('remove-points-button').addEventListener('click', () => { const points = parseInt(document.getElementById('points-input').value); if (!isNaN(points) && points > 0) updatePoints(-points); });
         saveSettingsButton.addEventListener('click', saveSettings);
+
     </script>
 </body>
 </html>
