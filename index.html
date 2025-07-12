@@ -19,10 +19,33 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 50; }
         .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #16a34a; /* Verde Alley33 */ width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Stile per il video di sfondo */
         #welcome-view {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://www.alley33.it/cdn/shop/files/alley-33-negozio-di-abbigliamento-a-rovigo.jpg?v=1683192017&width=1500');
+            position: relative;
+            overflow: hidden;
+        }
+        #welcome-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -100;
+            transform: translateX(-50%) translateY(-50%);
             background-size: cover;
-            background-position: center;
+            transition: 1s opacity;
+        }
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            z-index: -50;
         }
     </style>
 </head>
@@ -32,15 +55,24 @@
 
         <div id="loading-view" class="flex items-center justify-center min-h-screen"><div class="loader"></div></div>
 
-        <div id="welcome-view" class="flex flex-col justify-between h-screen p-8 text-white hidden">
-            <div class="text-center">
-                <img src="./Logo_Alley_bianco.png" alt="Logo Alley33" class="w-48 mx-auto">
-            </div>
-            <div class="text-center"><h1 class="text-4xl font-extrabold">Benvenuto</h1><p class="mt-2">La tua fidelity card, sempre con te.</p></div>
-            <div class="space-y-4">
-                <button id="install-pwa-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 hidden">Installa App</button>
-                <button id="go-to-register-button" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200">Sei un nuovo utente? Registrati</button>
-                <button id="go-to-login-button" class="w-full bg-transparent border border-white text-white font-bold py-3 rounded-lg hover:bg-white hover:text-black">Sei già registrato? Accedi</button>
+        <!-- MODIFICA: Schermata di Benvenuto con video -->
+        <div id="welcome-view" class="h-screen hidden">
+            <div class="video-overlay"></div>
+            <video playsinline autoplay muted loop id="welcome-video">
+                <source src="./WelcomeVideo.mp4" type="video/mp4">
+                Il tuo browser non supporta i video.
+            </video>
+            
+            <div class="relative z-10 flex flex-col justify-between h-full p-8 text-white">
+                 <div class="text-center">
+                    <img src="./Logo_Alley_bianco.png" alt="Logo Alley33" class="w-48 mx-auto">
+                </div>
+                <div class="text-center"><h1 class="text-4xl font-extrabold">Benvenuto</h1><p class="mt-2">La tua fidelity card, sempre con te.</p></div>
+                <div class="space-y-4">
+                    <button id="install-pwa-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 hidden">Installa App</button>
+                    <button id="go-to-register-button" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200">Sei un nuovo utente? Registrati</button>
+                    <button id="go-to-login-button" class="w-full bg-transparent border border-white text-white font-bold py-3 rounded-lg hover:bg-white hover:text-black">Sei già registrato? Accedi</button>
+                </div>
             </div>
         </div>
 
@@ -126,7 +158,6 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // CHIAVI FIREBASE CORRETTE
         const firebaseConfig = {
             apiKey: "AIzaSyANwokA9yGsphGB6sjLwga4s8jHr1Z1gvY",
             authDomain: "alley33-card-v2.firebaseapp.com",
