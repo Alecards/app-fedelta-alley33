@@ -1,17 +1,16 @@
-// Aumenta la versione della cache per forzare l'aggiornamento
-const CACHE_NAME = 'alley33-card-v7'; 
+// Aumentata la versione della cache per forzare l'aggiornamento
+const CACHE_NAME = 'alley33-card-v6'; 
 const urlsToCache = [
-  './', // Cache della pagina principale (index.html)
-  './index.html',
+  './', 
+  './index.html', // Nome file corretto
   './manifest.json',
   './Logo_Alley_nero.png',
   './Logo_Alley_bianco.png',
-  './WelcomeVideo.mp4', // Aggiunto il video alla cache
   './icon-192x192.png',
   './icon-512x512.png'
 ];
 
-// Evento di installazione: il service worker si installa
+// Evento di installazione
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -19,11 +18,11 @@ self.addEventListener('install', event => {
         console.log('Cache aperta e file aggiunti');
         return cache.addAll(urlsToCache);
       })
-      .then(() => self.skipWaiting()) // Forza l'attivazione del nuovo SW
+      .then(() => self.skipWaiting())
   );
 });
 
-// Evento di attivazione: il service worker prende il controllo
+// Evento di attivazione per pulire le vecchie cache
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -36,17 +35,15 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    }).then(() => self.clients.claim()) // Prende il controllo di tutte le schede aperte
+    }).then(() => self.clients.claim())
   );
 });
 
-// Evento fetch: strategia "Cache first, then network"
+// Evento fetch
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Se la risorsa è in cache, la restituisce.
-        // Altrimenti, la richiede dalla rete.
         return response || fetch(event.request);
       })
   );
