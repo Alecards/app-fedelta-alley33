@@ -20,10 +20,10 @@
         .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #16a34a; /* Verde Alley33 */ width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Stile per il video di sfondo */
         #welcome-view {
             position: relative;
             overflow: hidden;
+            background-color: #333; /* Fallback per il video */
         }
         #welcome-video {
             position: absolute;
@@ -36,7 +36,6 @@
             z-index: -100;
             transform: translateX(-50%) translateY(-50%);
             background-size: cover;
-            transition: 1s opacity;
         }
         .video-overlay {
             position: absolute;
@@ -55,12 +54,12 @@
 
         <div id="loading-view" class="flex items-center justify-center min-h-screen"><div class="loader"></div></div>
 
-        <!-- MODIFICA: Schermata di Benvenuto con video -->
+        <!-- MODIFICA: Schermata di Benvenuto con video da Firebase -->
         <div id="welcome-view" class="h-screen hidden">
             <div class="video-overlay"></div>
             <video playsinline autoplay muted loop id="welcome-video">
-                <source src="./WelcomeVideo.mp4" type="video/mp4">
-                Il tuo browser non supporta i video.
+                <!-- LINK VIDEO AGGIORNATO -->
+                <source src="https://firebasestorage.googleapis.com/v0/b/alley33-card-v2.firebasestorage.app/o/WelcomeVideo.mp4?alt=media&token=881e2ce2-a3f2-448a-aeed-7308ac905b81" type="video/mp4">
             </video>
             
             <div class="relative z-10 flex flex-col justify-between h-full p-8 text-white">
@@ -76,6 +75,7 @@
             </div>
         </div>
 
+        <!-- ... resto del codice HTML (invariato) ... -->
         <div id="login-view" class="p-8 hidden">
             <div class="text-center mb-8">
                 <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-32 mx-auto mb-4">
