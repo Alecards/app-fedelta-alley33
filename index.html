@@ -54,11 +54,9 @@
 
         <div id="loading-view" class="flex items-center justify-center min-h-screen"><div class="loader"></div></div>
 
-        <!-- Schermata di Benvenuto con video da Firebase -->
         <div id="welcome-view" class="h-screen hidden">
             <div class="video-overlay"></div>
-            <video playsinline autoplay muted loop id="welcome-video">
-                <!-- URL del video inserita correttamente -->
+            <video playsinline autoplay muted loop id="welcome-video" crossorigin="anonymous">
                 <source src="https://firebasestorage.googleapis.com/v0/b/alley33-card-v2.firebasestorage.app/o/WelcomeVideo.mp4?alt=media&token=881e2ce2-a3f2-448a-aeed-7308ac905b81" type="video/mp4">
             </video>
             
