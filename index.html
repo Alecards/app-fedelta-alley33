@@ -18,9 +18,6 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 50; }
         .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #16a34a; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #welcome-view { position: relative; overflow: hidden; background-color: #333; }
-        #welcome-video { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; width: auto; height: auto; z-index: -100; transform: translateX(-50%) translateY(-50%); background-size: cover; }
-        .video-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: -50; }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -29,21 +26,18 @@
         
         <div id="loading-view" class="flex items-center justify-center min-h-screen"><div class="loader"></div></div>
 
-        <div id="welcome-view" class="h-screen hidden">
-            <div class="video-overlay"></div>
-            <video playsinline autoplay muted loop id="welcome-video">
-                <source src="https://firebasestorage.googleapis.com/v0/b/alley33-card-v2.firebasestorage.app/o/WelcomeVideo.mp4?alt=media&token=881e2ce2-a3f2-448a-aeed-7308ac905b81" type="video/mp4">
-            </video>
-            <div class="relative z-10 flex flex-col justify-between h-full p-8 text-white">
-                 <div class="text-center">
-                    <img src="./Logo_Alley_bianco.png" alt="Logo Alley33" class="w-48 mx-auto">
-                </div>
-                <div class="text-center"><h1 class="text-4xl font-extrabold">Benvenuto</h1><p class="mt-2">La tua fidelity card, sempre con te.</p></div>
-                <div class="space-y-4">
-                    <button id="install-pwa-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 hidden">Installa App</button>
-                    <button id="go-to-register-button" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200">Sei un nuovo utente? Registrati</button>
-                    <button id="go-to-login-button" class="w-full bg-transparent border border-white text-white font-bold py-3 rounded-lg hover:bg-white hover:text-black">Sei già registrato? Accedi</button>
-                </div>
+        <div id="welcome-view" class="flex flex-col justify-between h-screen p-8 bg-white text-gray-800 hidden">
+            <div class="text-center pt-12">
+                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-48 mx-auto">
+            </div>
+            <div class="text-center">
+                <h1 class="text-5xl font-extrabold">Benvenuto</h1>
+                <p class="mt-2 text-lg text-gray-600">La tua fidelity card, sempre con te.</p>
+            </div>
+            <div class="space-y-4">
+                <button id="install-pwa-button" class="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 hidden">Installa App</button>
+                <button id="go-to-register-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Sei un nuovo utente? Registrati</button>
+                <button id="go-to-login-button" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300">Sei già registrato? Accedi</button>
             </div>
         </div>
 
@@ -107,6 +101,7 @@
         </div>
         
         <template id="card-template">
+            <div id="notifications-banner-container"></div>
             <div class="bg-gray-900 text-white rounded-xl shadow-2xl p-6 text-center">
                 <h3 class="text-2xl font-semibold">Punti Fedeltà</h3>
                 <p id="points-display" class="text-7xl font-bold my-4">0</p>
@@ -119,6 +114,18 @@
                 <button id="logout-button-main" class="w-full mt-8 bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700">Esci</button>
             </div>
         </template>
+        <template id="notifications-banner-template">
+            <div id="notifications-banner" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 mb-4 rounded-md shadow-md" role="alert">
+                <div class="flex">
+                    <div class="py-1"><svg class="fill-current h-6 w-6 text-yellow-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15h14a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg></div>
+                    <div>
+                        <p class="font-bold">Rimani aggiornato!</p>
+                        <p class="text-sm">Abilita le notifiche per non perderti promozioni e novità.</p>
+                        <button id="enable-notifications-button" class="mt-2 bg-green-600 text-white font-bold py-1 px-3 rounded text-sm hover:bg-green-700">Abilita Notifiche</button>
+                    </div>
+                </div>
+            </div>
+        </template>
         <template id="shop-template"><div class="text-center pt-16"><h3 class="text-2xl font-bold text-gray-800 mb-4">Visita il nostro Shop Online</h3><p class="text-gray-600 mb-8 max-w-xs mx-auto">Clicca per aprire il sito in una nuova pagina.</p><a href="https://www.alley33.it" target="_blank" class="inline-block bg-green-600 text-white font-bold py-4 px-10 rounded-lg shadow-md hover:bg-green-700">Vai ad Alley33.it</a></div></template>
         <div id="privacy-modal" class="modal-overlay hidden"><div class="bg-white rounded-lg shadow-xl m-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"><div class="p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold">Informativa Privacy</h3><button id="close-privacy-policy" class="text-gray-500">&times;</button></div><div class="prose prose-sm"><h4>Titolare del Trattamento</h4><p>Alley33 S.r.l., ...</p></div></div></div></div>
     </div>
@@ -128,13 +135,14 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-        import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging.js";
+        import { getMessaging, getToken, isSupported } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging.js";
 
+        // CORREZIONE: Inserito il valore corretto per storageBucket
         const firebaseConfig = {
             apiKey: "AIzaSyANwokA9yGsphGB6sjLwga4s8jHr1Z1gvY",
             authDomain: "alley33-card-v2.firebaseapp.com",
             projectId: "alley33-card-v2",
-            storageBucket: "alley33-card-v2.appspot.com",
+            storageBucket: "alley33-card-v2.firebasestorage.app",
             messagingSenderId: "892370144503",
             appId: "1:892370144503:web:a4aab865883cb3c50f17f2"
         };
@@ -142,7 +150,12 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const messaging = getMessaging(app);
+        let messaging;
+        isSupported().then(supported => {
+            if (supported) {
+                messaging = getMessaging(app);
+            }
+        });
 
         const allViews = {
             loading: document.getElementById('loading-view'),
@@ -268,6 +281,15 @@
                     historyList.appendChild(li);
                 });
             } else { historyList.innerHTML = '<li class="text-center text-gray-500">Nessuna transazione.</li>'; }
+
+            const bannerContainer = mainContent.querySelector('#notifications-banner-container');
+            if (Notification.permission === 'default') {
+                const bannerTemplate = document.getElementById('notifications-banner-template').content.cloneNode(true);
+                bannerContainer.appendChild(bannerTemplate);
+                bannerContainer.querySelector('#enable-notifications-button').addEventListener('click', () => {
+                    requestNotificationPermission(auth.currentUser.uid);
+                });
+            }
         }
 
         function setupNavigation() {
@@ -285,15 +307,15 @@
         }
 
         async function requestNotificationPermission(userId) {
+            if (!messaging) { return; }
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    console.log('Permesso notifiche concesso.');
-                    // CHIAVE VAPID INSERITA CORRETTAMENTE
+                    const banner = document.getElementById('notifications-banner');
+                    if(banner) banner.remove();
                     const currentToken = await getToken(messaging, { vapidKey: 'BDFJ18aEY2qay-fNih2CbXfO-r5M5iC7UG37YRrzutLJBQ9wBf_xplhGPFj09fIcPRp_ZVpXC-oVaEiMk4QAR8w' });
                     if (currentToken) {
-                        const userDocRef = doc(db, "users", userId);
-                        await updateDoc(userDocRef, { fcmToken: currentToken });
+                        await updateDoc(doc(db, "users", userId), { fcmToken: currentToken });
                     }
                 }
             } catch (error) {
@@ -309,7 +331,6 @@
                         showView('main');
                         renderApp(docSnap.data()); 
                         setupNavigation();
-                        requestNotificationPermission(user.uid);
                     } 
                     else { handleLogout(); }
                 });
