@@ -1,13 +1,15 @@
 // Aumentata la versione della cache per forzare l'aggiornamento
-const CACHE_NAME = 'alley33-card-v6'; 
+const CACHE_NAME = 'alley33-card-v9'; 
 const urlsToCache = [
   './', 
-  './index.html', // Nome file corretto
+  './index.html',
   './manifest.json',
   './Logo_Alley_nero.png',
   './Logo_Alley_bianco.png',
   './icon-192x192.png',
-  './icon-512x512.png'
+  './icon-512x512.png',
+  // LINK VIDEO AGGIORNATO
+  'https://firebasestorage.googleapis.com/v0/b/alley33-card-v2.firebasestorage.app/o/WelcomeVideo.mp4?alt=media&token=881e2ce2-a3f2-448a-aeed-7308ac905b81'
 ];
 
 // Evento di installazione
