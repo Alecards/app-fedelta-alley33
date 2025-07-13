@@ -221,7 +221,7 @@
                 await setPersistence(auth, browserLocalPersistence);
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-                // AGGIUNTO: Salvataggio esplicito del consenso privacy
+                // CORREZIONE: Salvataggio esplicito di entrambi i consensi
                 await setDoc(doc(db, "users", user.uid), { name, surname, email, phone, points: 0, barcode: generateEan13(), history: [], privacyConsent: privacyCheck.checked, marketingConsent: marketingCheck.checked, registrationDate: new Date().toISOString() });
             } catch (error) {
                 registerErrorMessage.textContent = error.code === 'auth/email-already-in-use' ? 'Questa email è già registrata.' : 'Errore durante la registrazione.';
@@ -282,10 +282,11 @@
                 });
             } else { historyList.innerHTML = '<li class="text-center text-gray-500">Nessuna transazione.</li>'; }
 
-            // Logica per mostrare il banner delle notifiche
+            // CORREZIONE: Logica per mostrare il banner delle notifiche
             const bannerContainer = mainContent.querySelector('#notifications-banner-container');
-            if (bannerContainer && Notification.permission === 'default' && !userData.fcmToken) {
+            if (bannerContainer && messaging && Notification.permission === 'default' && !userData.fcmToken) {
                 const bannerTemplate = document.getElementById('notifications-banner-template').content.cloneNode(true);
+                bannerContainer.innerHTML = ''; // Pulisce il contenitore prima di aggiungere
                 bannerContainer.appendChild(bannerTemplate);
                 bannerContainer.querySelector('#enable-notifications-button').addEventListener('click', () => {
                     requestNotificationPermission(auth.currentUser.uid);
@@ -314,14 +315,13 @@
             }
             try {
                 const permission = await Notification.requestPermission();
+                const banner = document.getElementById('notifications-banner');
+                if (banner) banner.remove(); // Rimuove il banner in ogni caso
+
                 if (permission === 'granted') {
-                    const banner = document.getElementById('notifications-banner');
-                    if(banner) banner.remove();
-                    
                     const currentToken = await getToken(messaging, { vapidKey: 'BDFJ18aEY2qay-fNih2CbXfO-r5M5iC7UG37YRrzutLJBQ9wBf_xplhGPFj09fIcPRp_ZVpXC-oVaEiMk4QAR8w' });
                     if (currentToken) {
-                        const userDocRef = doc(db, "users", userId);
-                        await updateDoc(userDocRef, { fcmToken: currentToken });
+                        await updateDoc(doc(db, "users", userId), { fcmToken: currentToken });
                         console.log('Token salvato nel profilo utente.');
                     }
                 } else {
@@ -381,3 +381,4 @@
     </script>
 </body>
 </html>
+
