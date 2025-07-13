@@ -1,5 +1,5 @@
 // Aumentata la versione della cache per forzare l'aggiornamento
-const CACHE_NAME = 'alley33-card-v13'; 
+const CACHE_NAME = 'alley33-card-v14'; 
 const urlsToCache = [
   './', 
   './index.html',
