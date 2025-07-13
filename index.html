@@ -152,7 +152,6 @@
         let messaging;
         let swRegistration = null;
 
-        // CORREZIONE: Registra il Service Worker all'avvio
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', async () => {
                 try {
@@ -321,13 +320,12 @@
         }
 
         async function requestNotificationPermission(userId) {
-            if (!messaging) return;
+            if (!messaging) { return; }
             try {
                 const permission = await Notification.requestPermission();
                 const banner = document.getElementById('notifications-banner');
                 if (banner) banner.remove();
                 if (permission === 'granted') {
-                    // CORREZIONE: Passa il service worker registrato a getToken
                     const currentToken = await getToken(messaging, { 
                         serviceWorkerRegistration: swRegistration,
                         vapidKey: 'BDFJ18aEY2qay-fNih2CbXfO-r5M5iC7UG37YRrzutLJBQ9wBf_xplhGPFj09fIcPRp_ZVpXC-oVaEiMk4QAR8w' 
