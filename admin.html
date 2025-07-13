@@ -3,372 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alley33 Card</title>
-    
-    <meta name="theme-color" content="#ffffff">
-    <link rel="apple-touch-icon" href="icon-192x192.png">
-    <link rel="manifest" href="manifest.json">
-
+    <title>Admin Dashboard - Alley33</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .hidden { display: none; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 50; }
-        .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #16a34a; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-gray-100">
 
-    <div id="app-container" class="max-w-md mx-auto bg-white shadow-lg min-h-screen relative">
-        
-        <div id="loading-view" class="flex items-center justify-center min-h-screen"><div class="loader"></div></div>
-
-        <div id="welcome-view" class="flex flex-col justify-between h-screen p-8 bg-white text-gray-800 hidden">
-            <div class="text-center pt-12">
-                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-48 mx-auto">
-            </div>
-            <div class="text-center">
-                <h1 class="text-5xl font-extrabold">Benvenuto</h1>
-                <p class="mt-2 text-lg text-gray-600">La tua fidelity card, sempre con te.</p>
-            </div>
+    <!-- VISTA LOGIN ADMIN -->
+    <div id="admin-login-view" class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-sm p-8 bg-white rounded-lg shadow-md">
+            <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Accesso Admin</h1>
             <div class="space-y-4">
-                <button id="install-pwa-button" class="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 hidden">Installa App</button>
-                <button id="go-to-register-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Sei un nuovo utente? Registrati</button>
-                <button id="go-to-login-button" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300">Sei già registrato? Accedi</button>
+                <input type="email" id="admin-email" placeholder="Email admin" class="w-full px-4 py-2 border rounded-lg">
+                <input type="password" id="admin-password" placeholder="Password" class="w-full px-4 py-2 border rounded-lg">
+                <button id="admin-login-button" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700">Entra</button>
             </div>
+            <p id="admin-error-message" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+        </div>
+    </div>
+
+    <!-- VISTA DASHBOARD PRINCIPALE -->
+    <div id="admin-dashboard-view" class="hidden">
+        <header class="bg-gray-800 text-white p-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold">Dashboard</h1>
+            <div>
+                <button id="export-button" class="text-sm bg-blue-500 px-3 py-1 rounded-md hover:bg-blue-600 mr-4">Esporta in Excel</button>
+                <button id="admin-logout-button" class="text-sm bg-red-500 px-3 py-1 rounded-md hover:bg-red-600">Esci</button>
+            </div>
+        </header>
+
+        <!-- TABS DI NAVIGAZIONE -->
+        <div class="bg-white border-b">
+            <nav class="flex">
+                <button data-tab="clienti" class="admin-tab-button flex-1 py-3 text-center font-semibold border-b-4 border-green-600 text-green-600">Clienti</button>
+                <button data-tab="impostazioni" class="admin-tab-button flex-1 py-3 text-center font-semibold text-gray-500">Impostazioni</button>
+            </nav>
         </div>
 
-        <div id="login-view" class="p-8 hidden">
-            <div class="text-center mb-8">
-                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-32 mx-auto mb-4">
-                <h1 class="text-3xl font-bold text-gray-800">Accedi</h1>
+        <!-- CONTENUTO TAB CLIENTI -->
+        <div id="clienti-tab-content" class="flex flex-col md:flex-row h-[calc(100vh-113px)]">
+            <div class="w-full md:w-1/3 bg-white border-r overflow-y-auto">
+                <div class="p-4"><input type="search" id="search-user" placeholder="Cerca per nome, email o barcode..." class="w-full px-3 py-2 border rounded-lg"></div>
+                <ul id="user-list" class="divide-y"></ul>
             </div>
-            <div class="space-y-4">
-                <input type="email" id="login-email-input" placeholder="Email" class="w-full px-4 py-3 border rounded-lg">
-                <input type="password" id="login-password-input" placeholder="Password" class="w-full px-4 py-3 border rounded-lg">
-                <button id="login-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Entra</button>
-            </div>
-            <a href="#" id="go-to-recover-button" class="block text-center text-sm text-green-600 mt-4 hover:underline">Password dimenticata?</a>
-            <p id="login-error-message" class="text-red-600 text-sm mt-4 text-center hidden"></p>
-            <button class="back-to-welcome text-gray-500 text-sm mt-8 mx-auto block"> &larr; Torna alla home</button>
-        </div>
-
-        <div id="register-view" class="p-8 hidden">
-             <div class="text-center mb-8">
-                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-32 mx-auto mb-4">
-                <h1 class="text-3xl font-bold text-gray-800">Crea il tuo account</h1>
-            </div>
-            <div class="space-y-4">
-                <input type="text" id="register-name-input" placeholder="Nome" class="w-full px-4 py-3 border rounded-lg">
-                <input type="text" id="register-surname-input" placeholder="Cognome" class="w-full px-4 py-3 border rounded-lg">
-                <input type="email" id="register-email-input" placeholder="Email" class="w-full px-4 py-3 border rounded-lg">
-                <input type="tel" id="register-phone-input" placeholder="Cellulare" class="w-full px-4 py-3 border rounded-lg">
-                <input type="password" id="register-password-input" placeholder="Password (min. 6 caratteri)" class="w-full px-4 py-3 border rounded-lg">
-                <div class="space-y-3 pt-2">
-                    <div class="flex items-start"><input id="privacy-check" type="checkbox" class="h-5 w-5 mt-0.5 text-green-600 focus:ring-green-500"><label for="privacy-check" class="ml-3 text-sm">Dichiaro di aver letto la <a href="#" id="open-privacy-policy" class="font-semibold text-green-600">Privacy Policy</a>.</label></div>
-                    <div class="flex items-start"><input id="marketing-check" type="checkbox" class="h-5 w-5 mt-0.5 text-green-600 focus:ring-green-500"><label for="marketing-check" class="ml-3 text-sm">Acconsento al marketing.</label></div>
-                </div>
-                <button id="register-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg !mt-6 hover:bg-green-700">Registrati</button>
-            </div>
-            <p id="register-error-message" class="text-red-600 text-sm mt-4 text-center hidden"></p>
-            <button class="back-to-welcome text-gray-500 text-sm mt-8 mx-auto block"> &larr; Torna alla home</button>
-        </div>
-
-        <div id="recover-password-view" class="p-8 hidden">
-            <div class="text-center mb-8">
-                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="w-32 mx-auto mb-4">
-                <h1 class="text-3xl font-bold text-gray-800">Recupera Password</h1>
-            </div>
-            <p class="text-gray-600 mb-4 text-center">Inserisci la tua email e ti invieremo un link per reimpostare la password.</p>
-            <div class="space-y-4">
-                <input type="email" id="recover-email-input" placeholder="La tua email di registrazione" class="w-full px-4 py-3 border rounded-lg">
-                <button id="recover-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Invia link</button>
-            </div>
-            <p id="recover-message" class="text-green-600 text-sm mt-4 text-center hidden"></p>
-            <button class="back-to-welcome text-gray-500 text-sm mt-8 mx-auto block"> &larr; Torna alla home</button>
-        </div>
-
-        <div id="main-app-view" class="hidden">
-            <header class="bg-white text-gray-800 p-4 flex justify-between items-center border-b">
-                <div id="welcome-message-container"></div>
-                <img src="./Logo_Alley_nero.png" alt="Logo Alley33" class="h-8">
-            </header>
-            <main id="main-content" class="p-4 pb-20"></main>
-            <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t flex justify-around"></nav>
-        </div>
-        
-        <template id="card-template">
-            <div id="notifications-banner-container"></div>
-            <div class="bg-gray-900 text-white rounded-xl shadow-2xl p-6 text-center">
-                <h3 class="text-2xl font-semibold">Punti Fedeltà</h3>
-                <p id="points-display" class="text-7xl font-bold my-4">0</p>
-                <p class="text-gray-400">Il tuo barcode personale</p>
-                <div class="bg-white p-4 rounded-lg mt-4"><svg id="barcode"></svg></div>
-            </div>
-            <div class="mt-6">
-                <h4 class="text-xl font-bold text-gray-800 mb-3">Storico Transazioni</h4>
-                <ul id="history-list" class="space-y-3"></ul>
-                <button id="logout-button-main" class="w-full mt-8 bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700">Esci</button>
-            </div>
-        </template>
-        <template id="notifications-banner-template">
-            <div id="notifications-banner" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 mb-4 rounded-md shadow-md" role="alert">
-                <div class="flex">
-                    <div class="py-1"><svg class="fill-current h-6 w-6 text-yellow-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15h14a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg></div>
-                    <div>
-                        <p class="font-bold">Rimani aggiornato!</p>
-                        <p class="text-sm">Abilita le notifiche per non perderti promozioni e novità.</p>
-                        <button id="enable-notifications-button" class="mt-2 bg-green-600 text-white font-bold py-1 px-3 rounded text-sm hover:bg-green-700">Abilita Notifiche</button>
+            <div id="user-detail-container" class="w-full md:w-2/3 p-6 overflow-y-auto">
+                <div id="user-detail-placeholder" class="text-center text-gray-500 mt-16"><p>Seleziona un utente dalla lista per vedere i dettagli.</p></div>
+                <div id="user-detail-content" class="hidden">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h2 id="detail-name" class="text-3xl font-bold text-gray-800"></h2>
+                            <p id="detail-email" class="text-gray-500 mb-2"></p>
+                            <p id="detail-phone" class="text-gray-500"></p>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg shadow-md"><svg id="detail-barcode"></svg></div>
+                    </div>
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-700">Gestione Punti</h3>
+                        <div class="flex items-center my-4">
+                            <p class="text-5xl font-bold text-green-600" id="detail-points"></p>
+                            <p class="ml-3 text-gray-600">punti attuali</p>
+                        </div>
+                        <div class="space-y-3">
+                            <input type="number" id="points-input" placeholder="N° punti" class="w-full px-3 py-2 border rounded-lg">
+                            <input type="text" id="description-input" placeholder="Descrizione (es. Acquisto maglia)" class="w-full px-3 py-2 border rounded-lg">
+                            <div class="flex space-x-3">
+                                <button id="add-points-button" class="flex-1 bg-green-500 text-white font-bold py-2 rounded-lg hover:bg-green-600">Aggiungi Punti</button>
+                                <button id="remove-points-button" class="flex-1 bg-red-500 text-white font-bold py-2 rounded-lg hover:bg-red-600">Scala Punti</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-3">Storico Transazioni Cliente</h3>
+                        <ul id="history-list-admin" class="space-y-2"></ul>
                     </div>
                 </div>
             </div>
-        </template>
-        <template id="shop-template"><div class="text-center pt-16"><h3 class="text-2xl font-bold text-gray-800 mb-4">Visita il nostro Shop Online</h3><p class="text-gray-600 mb-8 max-w-xs mx-auto">Clicca per aprire il sito in una nuova pagina.</p><a href="https://www.alley33.it" target="_blank" class="inline-block bg-green-600 text-white font-bold py-4 px-10 rounded-lg shadow-md hover:bg-green-700">Vai ad Alley33.it</a></div></template>
-        <div id="privacy-modal" class="modal-overlay hidden"><div class="bg-white rounded-lg shadow-xl m-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"><div class="p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold">Informativa Privacy</h3><button id="close-privacy-policy" class="text-gray-500">&times;</button></div><div class="prose prose-sm"><h4>Titolare del Trattamento</h4><p>Alley33 S.r.l., ...</p></div></div></div></div>
+        </div>
+
+        <!-- CONTENUTO TAB IMPOSTAZIONI -->
+        <div id="impostazioni-tab-content" class="p-8 hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Impostazioni App</h2>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Loghi</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-lg border">
+                            <label for="logo-nero-upload" class="block text-sm font-medium text-gray-700">Logo Nero (per sfondi chiari)</label>
+                            <input type="file" id="logo-nero-upload" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"/>
+                            <img id="logo-nero-preview" class="mt-4 h-12" src="" alt="Anteprima Logo Nero">
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded-lg border">
+                            <label for="logo-bianco-upload" class="block text-sm font-medium text-white">Logo Bianco (per sfondi scuri)</label>
+                            <input type="file" id="logo-bianco-upload" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600"/>
+                            <img id="logo-bianco-preview" class="mt-4 h-12" src="" alt="Anteprima Logo Bianco">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Privacy Policy</h3>
+                    <textarea id="privacy-policy-editor" rows="10" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500"></textarea>
+                </div>
+                <button id="save-settings-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Salva Impostazioni</button>
+            </div>
+        </div>
     </div>
 
-    <!-- ===== SCRIPT FIREBASE ===== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-        import { getMessaging, getToken, isSupported } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-messaging.js";
-
-        // CORREZIONE: Inserito il valore corretto per storageBucket
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
+        
         const firebaseConfig = {
             apiKey: "AIzaSyANwokA9yGsphGB6sjLwga4s8jHr1Z1gvY",
             authDomain: "alley33-card-v2.firebaseapp.com",
             projectId: "alley33-card-v2",
-            storageBucket: "alley33-card-v2.firebasestorage.app",
+            storageBucket: "alley33-card-v2.appspot.com",
             messagingSenderId: "892370144503",
             appId: "1:892370144503:web:a4aab865883cb3c50f17f2"
         };
+        
+        const ADMIN_EMAIL = "amministrazione@alley33.it";
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        let messaging;
-        isSupported().then(supported => {
-            if (supported) {
-                messaging = getMessaging(app);
-            }
-        });
+        const storage = getStorage(app);
 
-        const allViews = {
-            loading: document.getElementById('loading-view'),
-            welcome: document.getElementById('welcome-view'),
-            login: document.getElementById('login-view'),
-            register: document.getElementById('register-view'),
-            recover: document.getElementById('recover-password-view'),
-            main: document.getElementById('main-app-view')
-        };
+        const loginView = document.getElementById('admin-login-view');
+        const dashboardView = document.getElementById('admin-dashboard-view');
+        const adminEmailInput = document.getElementById('admin-email');
+        const adminPasswordInput = document.getElementById('admin-password');
+        const adminLoginButton = document.getElementById('admin-login-button');
+        const adminErrorMessage = document.getElementById('admin-error-message');
+        const adminLogoutButton = document.getElementById('admin-logout-button');
+        const userList = document.getElementById('user-list');
+        const userDetailContent = document.getElementById('user-detail-content');
+        const userDetailPlaceholder = document.getElementById('user-detail-placeholder');
+        const searchInput = document.getElementById('search-user');
+        const exportButton = document.getElementById('export-button');
+        const adminTabButtons = document.querySelectorAll('.admin-tab-button');
+        const clientiTabContent = document.getElementById('clienti-tab-content');
+        const impostazioniTabContent = document.getElementById('impostazioni-tab-content');
+        
+        const logoNeroUpload = document.getElementById('logo-nero-upload');
+        const logoBiancoUpload = document.getElementById('logo-bianco-upload');
+        const logoNeroPreview = document.getElementById('logo-nero-preview');
+        const logoBiancoPreview = document.getElementById('logo-bianco-preview');
+        const privacyPolicyEditor = document.getElementById('privacy-policy-editor');
+        const saveSettingsButton = document.getElementById('save-settings-button');
 
-        function showView(viewName) {
-            Object.values(allViews).forEach(view => view.classList.add('hidden'));
-            if (allViews[viewName]) {
-                allViews[viewName].classList.remove('hidden');
-            }
+        let allUsersData = [];
+        let selectedUserId = null;
+
+        function showError(message) {
+            adminErrorMessage.textContent = message;
+            adminErrorMessage.classList.remove('hidden');
         }
 
-        document.getElementById('go-to-register-button').addEventListener('click', () => showView('register'));
-        document.getElementById('go-to-login-button').addEventListener('click', () => showView('login'));
-        document.getElementById('go-to-recover-button').addEventListener('click', (e) => { e.preventDefault(); showView('recover'); });
-        document.querySelectorAll('.back-to-welcome').forEach(btn => btn.addEventListener('click', () => showView('welcome')));
-
-        const loginEmailInput = document.getElementById('login-email-input');
-        const loginPasswordInput = document.getElementById('login-password-input');
-        const loginButton = document.getElementById('login-button');
-        const loginErrorMessage = document.getElementById('login-error-message');
-
-        async function handleLogin() {
-            const email = loginEmailInput.value.trim();
-            const password = loginPasswordInput.value.trim();
-            loginErrorMessage.classList.add('hidden');
-            if (!email || !password) return loginErrorMessage.textContent = 'Email e password sono obbligatori.', loginErrorMessage.classList.remove('hidden');
+        async function handleAdminLogin() {
+            const email = adminEmailInput.value;
+            const password = adminPasswordInput.value;
+            adminErrorMessage.classList.add('hidden');
             try {
-                await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
-                loginErrorMessage.textContent = 'Email o password non corretti.';
-                loginErrorMessage.classList.remove('hidden');
+                console.error("Errore di login:", error.code);
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-login-credentials') {
+                    showError("Credenziali non valide.");
+                } else {
+                    showError("Errore di configurazione o di rete. Controlla la console.");
+                }
             }
         }
-        loginButton.addEventListener('click', handleLogin);
 
-        const registerNameInput = document.getElementById('register-name-input');
-        const registerSurnameInput = document.getElementById('register-surname-input');
-        const registerEmailInput = document.getElementById('register-email-input');
-        const registerPhoneInput = document.getElementById('register-phone-input');
-        const registerPasswordInput = document.getElementById('register-password-input');
-        const privacyCheck = document.getElementById('privacy-check');
-        const marketingCheck = document.getElementById('marketing-check');
-        const registerButton = document.getElementById('register-button');
-        const registerErrorMessage = document.getElementById('register-error-message');
-        
-        async function handleRegister() {
-            const name = registerNameInput.value.trim();
-            const surname = registerSurnameInput.value.trim();
-            const email = registerEmailInput.value.trim();
-            const phone = registerPhoneInput.value.trim();
-            const password = registerPasswordInput.value.trim();
-            registerErrorMessage.classList.add('hidden');
-            if (!email || !name || !surname || !phone || !password) return registerErrorMessage.textContent = 'Tutti i campi sono obbligatori.', registerErrorMessage.classList.remove('hidden');
-            if (password.length < 6) return registerErrorMessage.textContent = 'La password deve essere di almeno 6 caratteri.', registerErrorMessage.classList.remove('hidden');
-            if (!privacyCheck.checked || !marketingCheck.checked) return registerErrorMessage.textContent = 'È necessario accettare Privacy e Marketing.', registerErrorMessage.classList.remove('hidden');
+        async function loadAllUsers() {
             try {
-                await setPersistence(auth, browserLocalPersistence);
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                await setDoc(doc(db, "users", user.uid), { name, surname, email, phone, points: 0, barcode: generateEan13(), history: [], marketingConsent: marketingCheck.checked, registrationDate: new Date().toISOString() });
-            } catch (error) {
-                registerErrorMessage.textContent = error.code === 'auth/email-already-in-use' ? 'Questa email è già registrata.' : 'Errore durante la registrazione.';
-                registerErrorMessage.classList.remove('hidden');
-            }
-        }
-        registerButton.addEventListener('click', handleRegister);
-
-        const recoverEmailInput = document.getElementById('recover-email-input');
-        const recoverButton = document.getElementById('recover-button');
-        const recoverMessage = document.getElementById('recover-message');
-
-        async function handlePasswordRecovery() {
-            const email = recoverEmailInput.value.trim();
-            if(!email) return;
-            try {
-                await sendPasswordResetEmail(auth, email);
-                recoverMessage.textContent = 'Link di recupero inviato! Controlla la tua email.';
-                recoverMessage.classList.remove('hidden');
-            } catch (error) {
-                recoverMessage.textContent = 'Errore. Assicurati che l\'email sia corretta.';
-                recoverMessage.classList.add('text-red-600');
-                recoverMessage.classList.remove('hidden');
-            }
-        }
-        recoverButton.addEventListener('click', handlePasswordRecovery);
-
-        const mainContent = document.getElementById('main-content');
-        const navContainer = document.querySelector('nav');
-        let unsubscribeFromFirestore = null;
-
-        function handleLogout() { if (unsubscribeFromFirestore) unsubscribeFromFirestore(); signOut(auth); }
-        
-        function renderApp(userData) {
-            const welcomeContainer = document.getElementById('welcome-message-container');
-            welcomeContainer.innerHTML = `<p class="text-lg text-gray-600">BenvenutƏ,</p><h2 class="font-bold text-xl text-gray-800">${userData.name} ${userData.surname}</h2>`;
-            
-            const cardTemplate = document.getElementById('card-template').content.cloneNode(true);
-            mainContent.innerHTML = '';
-            mainContent.appendChild(cardTemplate);
-
-            mainContent.querySelector('#logout-button-main').addEventListener('click', handleLogout);
-            
-            const pointsDisplay = mainContent.querySelector('#points-display');
-            const barcodeElement = mainContent.querySelector('#barcode');
-            const historyList = mainContent.querySelector('#history-list');
-            pointsDisplay.textContent = userData.points || 0;
-            JsBarcode(barcodeElement, userData.barcode, { format: "EAN13", lineColor: "#000", width: 2, height: 80, displayValue: true, fontSize: 18 });
-            historyList.innerHTML = '';
-            if (userData.history && userData.history.length > 0) {
-                [...userData.history].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'bg-gray-50 p-4 rounded-lg flex justify-between items-center';
-                    const sign = item.type === 'add' ? '+' : '-';
-                    const color = item.type === 'add' ? 'text-green-600' : 'text-red-600';
-                    li.innerHTML = `<div><p class="font-semibold">${item.description}</p><p class="text-sm text-gray-500">${new Date(item.date).toLocaleDateString('it-IT')}</p></div><span class="font-bold text-lg ${color}">${sign}${item.points}</span>`;
-                    historyList.appendChild(li);
+                const querySnapshot = await getDocs(collection(db, "users"));
+                allUsersData = [];
+                querySnapshot.forEach((doc) => {
+                    allUsersData.push({ id: doc.id, ...doc.data() });
                 });
-            } else { historyList.innerHTML = '<li class="text-center text-gray-500">Nessuna transazione.</li>'; }
-
-            const bannerContainer = mainContent.querySelector('#notifications-banner-container');
-            if (Notification.permission === 'default') {
-                const bannerTemplate = document.getElementById('notifications-banner-template').content.cloneNode(true);
-                bannerContainer.appendChild(bannerTemplate);
-                bannerContainer.querySelector('#enable-notifications-button').addEventListener('click', () => {
-                    requestNotificationPermission(auth.currentUser.uid);
-                });
+                renderUserList(allUsersData);
+            } catch (e) {
+                console.error("Errore nel caricare gli utenti: ", e);
+                alert("Impossibile caricare la lista utenti.");
             }
         }
 
-        function setupNavigation() {
-            navContainer.innerHTML = `<button data-tab="card" class="tab-button flex-1 py-3 text-center text-green-600 font-semibold border-t-4 border-green-600">Card</button><button data-tab="shop" class="tab-button flex-1 py-3 text-center text-gray-500 font-semibold">Shop</button>`;
-            navContainer.querySelectorAll('.tab-button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const tab = e.currentTarget.dataset.tab;
-                    navContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('text-green-600', 'border-t-4', 'border-green-600'));
-                    e.currentTarget.classList.add('text-green-600', 'border-t-4', 'border-green-600');
-                    mainContent.innerHTML = '';
-                    if (tab === 'card') { getDoc(doc(db, "users", auth.currentUser.uid)).then(docSnap => { if (docSnap.exists()) renderApp(docSnap.data()) }); } 
-                    else if (tab === 'shop') { mainContent.appendChild(document.getElementById('shop-template').content.cloneNode(true)); }
-                });
+        function renderUserList(users) {
+            userList.innerHTML = '';
+            users.sort((a, b) => (a.surname || '').localeCompare(b.surname || '')).forEach(userData => {
+                const li = document.createElement('li');
+                li.className = 'p-4 hover:bg-green-50 cursor-pointer';
+                li.dataset.userId = userData.id;
+                li.innerHTML = `<p class="font-semibold text-gray-800">${userData.name} ${userData.surname}</p><p class="text-sm text-gray-500">${userData.email}</p>`;
+                userList.appendChild(li);
             });
         }
+        
+        function displayUserDetails(userId) {
+            selectedUserId = userId;
+            userDetailPlaceholder.classList.add('hidden');
+            userDetailContent.classList.remove('hidden');
+            const data = allUsersData.find(user => user.id === userId);
+            if (!data) return;
 
-        async function requestNotificationPermission(userId) {
-            if (!messaging) { return; }
-            try {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    const banner = document.getElementById('notifications-banner');
-                    if(banner) banner.remove();
-                    const currentToken = await getToken(messaging, { vapidKey: 'BDFJ18aEY2qay-fNih2CbXfO-r5M5iC7UG37YRrzutLJBQ9wBf_xplhGPFj09fIcPRp_ZVpXC-oVaEiMk4QAR8w' });
-                    if (currentToken) {
-                        await updateDoc(doc(db, "users", userId), { fcmToken: currentToken });
-                    }
-                }
-            } catch (error) {
-                console.error('Errore durante la richiesta del permesso o del token:', error);
+            document.getElementById('detail-name').textContent = `${data.name} ${data.surname}`;
+            document.getElementById('detail-email').textContent = data.email;
+            document.getElementById('detail-phone').textContent = `Cell: ${data.phone || 'N/D'}`;
+            document.getElementById('detail-points').textContent = data.points || 0;
+            const barcodeElement = document.getElementById('detail-barcode');
+            if (data.barcode) {
+                JsBarcode(barcodeElement, data.barcode, { format: "EAN13", width: 1.5, height: 60, displayValue: true, fontSize: 14 });
+            }
+            const historyListAdmin = document.getElementById('history-list-admin');
+            historyListAdmin.innerHTML = '';
+            if (data.history && data.history.length > 0) {
+                [...data.history].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center text-sm p-2 rounded ' + (item.type === 'add' ? 'bg-green-50' : 'bg-red-50');
+                    const transactionIdentifier = item.id || item.date;
+                    li.innerHTML = `<span><strong>${item.type === 'add' ? '+' : '-'}${item.points} punti</strong>: ${item.description} <span class="text-gray-500 ml-2">(${new Date(item.date).toLocaleDateString('it-IT')})</span></span><button class="delete-transaction-btn text-red-500 hover:text-red-700" data-transaction-id='${transactionIdentifier}'><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>`;
+                    historyListAdmin.appendChild(li);
+                });
+            } else {
+                historyListAdmin.innerHTML = '<li class="text-gray-400">Nessuna transazione.</li>';
             }
         }
+
+        async function updatePoints(pointsToAdd) {
+            if (!selectedUserId) return;
+            const points = parseInt(document.getElementById('points-input').value);
+            const description = document.getElementById('description-input').value;
+            if (isNaN(points) || points <= 0) return alert("Inserisci un numero di punti valido.");
+            if (!description) return alert("Inserisci una descrizione.");
+            const userDocRef = doc(db, "users", selectedUserId);
+            const newTransaction = { id: Date.now().toString(), date: new Date().toISOString(), points, type: pointsToAdd > 0 ? 'add' : 'spend', description };
+            try {
+                await updateDoc(userDocRef, { points: increment(pointsToAdd), history: arrayUnion(newTransaction) });
+                const userToUpdate = allUsersData.find(u => u.id === selectedUserId);
+                if (userToUpdate) {
+                    userToUpdate.points += pointsToAdd;
+                    if (!userToUpdate.history) userToUpdate.history = [];
+                    userToUpdate.history.push(newTransaction);
+                }
+                document.getElementById('points-input').value = '';
+                document.getElementById('description-input').value = '';
+                displayUserDetails(selectedUserId);
+            } catch (e) {
+                console.error("Errore nell'aggiornare i punti: ", e);
+                alert("Si è verificato un errore.");
+            }
+        }
+
+        async function handleDeleteTransaction(e) {
+            const deleteButton = e.target.closest('.delete-transaction-btn');
+            if (!deleteButton) return;
+            const transactionId = deleteButton.dataset.transactionId;
+            if (!selectedUserId || !transactionId) return;
+            if (!confirm("Sei sicuro di voler eliminare questa transazione?")) return;
+            const userToUpdate = allUsersData.find(u => u.id === selectedUserId);
+            const transactionToDelete = userToUpdate?.history.find(t => (t.id || t.date) === transactionId);
+            if (!transactionToDelete) return alert("Impossibile trovare la transazione.");
+            const pointsToReverse = transactionToDelete.type === 'add' ? -transactionToDelete.points : transactionToDelete.points;
+            const userDocRef = doc(db, "users", selectedUserId);
+            try {
+                await updateDoc(userDocRef, { points: increment(pointsToReverse), history: arrayRemove(transactionToDelete) });
+                userToUpdate.points += pointsToReverse;
+                userToUpdate.history = userToUpdate.history.filter(t => (t.id || t.date) !== transactionId);
+                displayUserDetails(selectedUserId);
+            } catch (error) {
+                console.error("Errore eliminazione transazione:", error);
+                alert("Errore durante l'eliminazione.");
+            }
+        }
+
+        function filterUsers() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filteredUsers = allUsersData.filter(user => (user.name && user.name.toLowerCase().includes(searchTerm)) || (user.surname && user.surname.toLowerCase().includes(searchTerm)) || (user.email && user.email.toLowerCase().includes(searchTerm)) || (user.barcode && user.barcode.includes(searchTerm)));
+            renderUserList(filteredUsers);
+        }
+
+        function exportToCsv() {
+            const headers = ["Nome", "Cognome", "Email", "Cellulare", "Punti Saldo", "Data Registrazione", "Barcode"];
+            const csvRows = [headers.join(',')];
+            for (const user of allUsersData) {
+                const values = [`"${user.name || ''}"`, `"${user.surname || ''}"`, `"${user.email || ''}"`, `"${user.phone || ''}"`, user.points || 0, user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('it-IT') : '', `"${user.barcode || ''}"`];
+                csvRows.push(values.join(','));
+            }
+            const csvString = csvRows.join('\n');
+            const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.setAttribute("href", url);
+            a.setAttribute("download", "clienti_alley33.csv");
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        async function loadSettings() {
+            const settingsRef = doc(db, "settings", "appConfig");
+            const docSnap = await getDoc(settingsRef);
+            if (docSnap.exists()) {
+                const settings = docSnap.data();
+                privacyPolicyEditor.value = settings.privacyPolicy || '';
+                if(settings.logoNeroUrl) logoNeroPreview.src = settings.logoNeroUrl;
+                if(settings.logoBiancoUrl) logoBiancoPreview.src = settings.logoBiancoUrl;
+            }
+        }
+
+        async function uploadFile(file, path) {
+            if (!file) return null;
+            const storageRef = ref(storage, path);
+            await uploadBytes(storageRef, file);
+            return await getDownloadURL(storageRef);
+        }
+
+        async function saveSettings() {
+            saveSettingsButton.textContent = 'Salvataggio...';
+            saveSettingsButton.disabled = true;
+            try {
+                const logoNeroFile = logoNeroUpload.files[0];
+                const logoBiancoFile = logoBiancoUpload.files[0];
+                const logoNeroUrl = await uploadFile(logoNeroFile, 'settings/logo-nero.png');
+                const logoBiancoUrl = await uploadFile(logoBiancoFile, 'settings/logo-bianco.png');
+                const settingsData = { privacyPolicy: privacyPolicyEditor.value };
+                if (logoNeroUrl) settingsData.logoNeroUrl = logoNeroUrl;
+                if (logoBiancoUrl) settingsData.logoBiancoUrl = logoBiancoUrl;
+                const settingsRef = doc(db, "settings", "appConfig");
+                await setDoc(settingsRef, settingsData, { merge: true });
+                alert('Impostazioni salvate!');
+                await loadSettings();
+            } catch (error) {
+                console.error("Errore salvataggio impostazioni:", error);
+                alert("Errore nel salvataggio.");
+            } finally {
+                saveSettingsButton.textContent = 'Salva Impostazioni';
+                saveSettingsButton.disabled = false;
+            }
+        }
+
+        adminTabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.dataset.tab;
+                adminTabButtons.forEach(btn => {
+                    btn.classList.remove('border-green-600', 'text-green-600');
+                    btn.classList.add('text-gray-500');
+                });
+                button.classList.add('border-green-600', 'text-green-600');
+                clientiTabContent.classList.toggle('hidden', tab !== 'clienti');
+                impostazioniTabContent.classList.toggle('hidden', tab !== 'impostazioni');
+            });
+        });
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                if (unsubscribeFromFirestore) unsubscribeFromFirestore();
-                unsubscribeFromFirestore = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-                    if (docSnap.exists()) { 
-                        showView('main');
-                        renderApp(docSnap.data()); 
-                        setupNavigation();
-                    } 
-                    else { handleLogout(); }
-                });
-            } else { showView('welcome'); }
-        });
-
-        function generateEan13() { let base = '200' + Math.random().toString().slice(2, 11); let sum = 0; for (let i = 0; i < 12; i++) { sum += parseInt(base[i]) * (i % 2 === 0 ? 1 : 3); } const checkDigit = (10 - (sum % 10)) % 10; return base + checkDigit; }
-        const privacyModal = document.getElementById('privacy-modal');
-        const openPrivacyBtn = document.getElementById('open-privacy-policy');
-        const closePrivacyBtn = document.getElementById('close-privacy-policy');
-        openPrivacyBtn.addEventListener('click', (e) => { e.preventDefault(); privacyModal.classList.remove('hidden'); });
-        closePrivacyBtn.addEventListener('click', () => privacyModal.classList.add('hidden'));
-        privacyModal.addEventListener('click', (e) => { if (e.target === privacyModal) privacyModal.classList.add('hidden'); });
-    
-        let deferredPrompt;
-        const installButton = document.getElementById('install-pwa-button');
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installButton.classList.remove('hidden');
-        });
-        installButton.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                installButton.classList.add('hidden');
+            if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                loginView.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+                loadAllUsers();
+                loadSettings();
+            } else {
+                if (user) { signOut(auth); }
+                loginView.classList.remove('hidden');
+                dashboardView.classList.add('hidden');
             }
         });
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            installButton.classList.add('hidden');
+
+        adminLoginButton.addEventListener('click', handleAdminLogin);
+        adminLogoutButton.addEventListener('click', () => signOut(auth));
+        userList.addEventListener('click', (e) => {
+            const li = e.target.closest('li');
+            if (li && li.dataset.userId) {
+                document.querySelectorAll('#user-list li').forEach(item => item.classList.remove('bg-green-100'));
+                li.classList.add('bg-green-100');
+                displayUserDetails(li.dataset.userId);
+            }
         });
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then(reg => console.log('SW registrato:', reg)).catch(err => console.log('Errore SW:', err));
-            });
-        }
+        searchInput.addEventListener('input', filterUsers);
+        exportButton.addEventListener('click', exportToCsv);
+        document.getElementById('history-list-admin').addEventListener('click', handleDeleteTransaction);
+        document.getElementById('add-points-button').addEventListener('click', () => { const points = parseInt(document.getElementById('points-input').value); if (!isNaN(points) && points > 0) updatePoints(points); });
+        document.getElementById('remove-points-button').addEventListener('click', () => { const points = parseInt(document.getElementById('points-input').value); if (!isNaN(points) && points > 0) updatePoints(-points); });
+        saveSettingsButton.addEventListener('click', saveSettings);
+
     </script>
 </body>
 </html>
