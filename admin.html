@@ -102,7 +102,7 @@
                     </div>
                     <div>
                         <label for="notification-url" class="block text-sm font-medium text-gray-700">Link di destinazione (URL)</label>
-                        <input type="url" id="notification-url" placeholder="https://www.alley33.it/collections/nuovi-arrivi" class="mt-1 block w-full px-3 py-2 border rounded-lg">
+                        <input type="url" id="notification-url" placeholder="https://card.alley33.it" class="mt-1 block w-full px-3 py-2 border rounded-lg">
                     </div>
                     <div>
                         <label for="notification-image" class="block text-sm font-medium text-gray-700">Immagine (opzionale)</label>
@@ -420,16 +420,35 @@
             sendNotificationButton.disabled = true;
 
             try {
-                console.log("Dati da inviare:", { title, body, url, selectedUsers });
-                setTimeout(() => {
-                    notificationStatus.textContent = `Notifica inviata a ${selectedUsers.length} utenti!`;
-                    notificationStatus.classList.add('text-green-500');
-                    sendNotificationButton.disabled = false;
-                }, 2000);
+                let imageUrl = null;
+                if (imageFile) {
+                    const imagePath = `notifications/${Date.now()}-${imageFile.name}`;
+                    imageUrl = await uploadFile(imageFile, imagePath);
+                }
+
+                const response = await fetch('/api/send-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, body, url, imageUrl, userIds: selectedUsers }),
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error("Funzione server non trovata. Controlla che il file 'api/send-notification.js' sia presente su GitHub.");
+                    }
+                    const result = await response.json();
+                    throw new Error(result.error || 'Errore sconosciuto dal server.');
+                }
+                
+                const result = await response.json();
+                notificationStatus.textContent = result.message || `Notifica inviata con successo!`;
+                notificationStatus.classList.add('text-green-500');
+
             } catch (error) {
                 console.error("Errore invio notifica:", error);
-                notificationStatus.textContent = 'Errore durante l\'invio.';
+                notificationStatus.textContent = `Errore: ${error.message}`;
                 notificationStatus.classList.add('text-red-500');
+            } finally {
                 sendNotificationButton.disabled = false;
             }
         }
