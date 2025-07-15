@@ -107,6 +107,10 @@
                     <div>
                         <label for="notification-image" class="block text-sm font-medium text-gray-700">Immagine (opzionale)</label>
                         <input type="file" id="notification-image" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                        <div id="image-preview-container" class="hidden mt-2">
+                            <img id="image-preview" class="h-24 w-auto rounded border p-1">
+                            <button id="remove-image-button" class="mt-1 text-xs text-red-600 hover:underline">Rimuovi immagine</button>
+                        </div>
                     </div>
                     <button id="send-notification-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Invia Notifica</button>
                     <p id="notification-status" class="text-sm text-center"></p>
@@ -176,7 +180,6 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // Riferimenti DOM
         const loginView = document.getElementById('admin-login-view');
         const dashboardView = document.getElementById('admin-dashboard-view');
         const adminEmailInput = document.getElementById('admin-email');
@@ -197,6 +200,10 @@
         const selectAllUsersCheckbox = document.getElementById('select-all-users');
         const sendNotificationButton = document.getElementById('send-notification-button');
         const notificationStatus = document.getElementById('notification-status');
+        const notificationImageInput = document.getElementById('notification-image');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImageButton = document.getElementById('remove-image-button');
         const logoNeroUpload = document.getElementById('logo-nero-upload');
         const logoBiancoUpload = document.getElementById('logo-bianco-upload');
         const logoNeroPreview = document.getElementById('logo-nero-preview');
@@ -409,7 +416,7 @@
             const title = document.getElementById('notification-title').value;
             const body = document.getElementById('notification-body').value;
             const url = document.getElementById('notification-url').value;
-            const imageFile = document.getElementById('notification-image').files[0];
+            const imageFile = notificationImageInput.files[0];
             const selectedUsers = Array.from(document.querySelectorAll('.user-notification-checkbox:checked')).map(cb => cb.value);
 
             if (!title || !body) return alert('Titolo e testo sono obbligatori.');
@@ -496,6 +503,23 @@
         document.getElementById('add-points-button').addEventListener('click', () => { const points = parseInt(document.getElementById('points-input').value); if (!isNaN(points) && points > 0) updatePoints(points); });
         document.getElementById('remove-points-button').addEventListener('click', () => { const points = parseInt(document.getElementById('points-input').value); if (!isNaN(points) && points > 0) updatePoints(-points); });
         saveSettingsButton.addEventListener('click', saveSettings);
+        sendNotificationButton.addEventListener('click', handleSendNotification);
+        notificationImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imagePreview.src = event.target.result;
+                    imagePreviewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        removeImageButton.addEventListener('click', () => {
+            notificationImageInput.value = '';
+            imagePreview.src = '';
+            imagePreviewContainer.classList.add('hidden');
+        });
 
     </script>
 </body>
