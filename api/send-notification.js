@@ -90,6 +90,7 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Errore grave durante l\'invio delle notifiche:', error);
-        res.status(500).send({ error: 'Errore interno del server durante l\'invio.' });
+        // MODIFICA: Invia un messaggio di errore più dettagliato alla dashboard
+        res.status(500).send({ error: `Errore interno del server: ${error.message}` });
     }
 }
