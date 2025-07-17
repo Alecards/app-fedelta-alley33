@@ -5,15 +5,20 @@ const admin = require('firebase-admin');
 function initializeFirebaseAdmin() {
     if (admin.apps.length === 0) {
         try {
-            const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount)
-            });
+            // Check if we have the service account key in environment
+            if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+                const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+                admin.initializeApp({
+                    credential: admin.credential.cert(serviceAccount)
+                });
+            } else {
+                // Fallback to default credentials (for local development)
+                admin.initializeApp();
+            }
             console.log("Firebase Admin SDK inizializzato con successo.");
         } catch (error) {
             console.error('Firebase Admin Initialization Error:', error);
-            // Questo errore bloccherà l'esecuzione se le credenziali su Vercel sono sbagliate.
-            throw new Error("Impossibile inizializzare Firebase Admin. Controlla le credenziali su Vercel.");
+            throw new Error("Impossibile inizializzare Firebase Admin. Controlla le credenziali.");
         }
     }
 }
@@ -23,8 +28,8 @@ initializeFirebaseAdmin();
 
 const db = admin.firestore();
 
-// Funzione principale che Vercel eseguirà quando chiamata.
-export default async function handler(req, res) {
+// Funzione principale per gestire le richieste
+async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -94,3 +99,6 @@ export default async function handler(req, res) {
         res.status(500).send({ error: `Errore interno del server: ${error.message}` });
     }
 }
+
+// Esporta la funzione per CommonJS
+module.exports = { default: handler };
