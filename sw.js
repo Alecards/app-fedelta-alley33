@@ -1,5 +1,8 @@
+Istruzioni
+Sostituisci il contenuto del tuo file sw.js su GitHub con questo.
+
 // Aumentata la versione della cache per forzare l'aggiornamento
-const CACHE_NAME = 'alley33-card-v14'; 
+const CACHE_NAME = 'alley33-card-v15'; 
 const urlsToCache = [
   './', 
   './index.html',
@@ -19,7 +22,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyANwokA9yGsphGB6sjLwga4s8jHr1Z1gvY",
     authDomain: "alley33-card-v2.firebaseapp.com",
     projectId: "alley33-card-v2",
-    storageBucket: "alley33-card-v2.appspot.com",
+    storageBucket: "alley33-card-v2.firebasestorage.app",
     messagingSenderId: "892370144503",
     appId: "1:892370144503:web:a4aab865883cb3c50f17f2"
 };
