@@ -1,25 +1,34 @@
-// Questo è il codice della nostra funzione server (Node.js)
+// Importiamo gli strumenti necessari di Firebase Admin
 const admin = require('firebase-admin');
 
 // Funzione per inizializzare Firebase Admin in modo sicuro, solo se non è già attivo.
 function initializeFirebaseAdmin() {
-    if (admin.apps.length === 0) {
-        try {
-            const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount)
-            });
-        } catch (error) {
-            console.error('Firebase Admin Initialization Error:', error);
-            throw new Error("Impossibile inizializzare Firebase Admin. Controlla le credenziali su Vercel.");
-        }
+    if (admin.apps.length > 0) {
+        return;
+    }
+    try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        
+        // Log di debug per verificare il project ID che stiamo usando
+        console.log("Tentativo di inizializzazione di Firebase Admin per il progetto:", serviceAccount.project_id);
+
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            // Aggiunta esplicita del projectId per eliminare ogni ambiguità
+            projectId: serviceAccount.project_id,
+        });
+        console.log("Firebase Admin SDK inizializzato con successo.");
+    } catch (error) {
+        console.error('ERRORE CRITICO DI INIZIALIZZAZIONE:', error);
+        throw new Error("Impossibile inizializzare Firebase Admin. Controlla le credenziali FIREBASE_SERVICE_ACCOUNT_KEY su Vercel.");
     }
 }
 
-// Eseguiamo l'inizializzazione una sola volta.
+// Eseguiamo l'inizializzazione una sola volta all'avvio della funzione.
 initializeFirebaseAdmin();
 
 const db = admin.firestore();
+const messaging = admin.messaging();
 
 // Funzione principale che Vercel eseguirà quando chiamata.
 export default async function handler(req, res) {
@@ -49,6 +58,8 @@ export default async function handler(req, res) {
             return res.status(404).json({ error: 'Nessun utente valido trovato con un token per le notifiche.' });
         }
 
+        console.log(`Preparazione invio notifica a ${tokens.length} token.`);
+
         const message = {
             notification: {
                 title: title,
@@ -66,19 +77,29 @@ export default async function handler(req, res) {
             tokens: tokens,
         };
 
-        const response = await admin.messaging().sendMulticast(message);
+        const response = await messaging.sendMulticast(message);
         
+        console.log('Notifiche inviate con successo:', response.successCount);
+        console.log('Errori nell\'invio:', response.failureCount);
+
+        if (response.failureCount > 0) {
+            response.responses.forEach((resp, idx) => {
+                if (!resp.success) {
+                    console.error(`Dettaglio errore per il token ${idx}:`, resp.error);
+                }
+            });
+        }
+
         res.status(200).json({ success: true, message: `Notifiche inviate a ${response.successCount} utenti.` });
 
     } catch (error) {
-        console.error('Errore grave durante l\'invio delle notifiche:', error);
+        console.error('ERRORE GRAVE DURANTE L\'INVIO:', error);
         
         let errorMessage = `Errore interno del server: ${error.message}`;
-        // Aggiunge un messaggio specifico se l'errore è quello che abbiamo visto
         if (error.code === 'messaging/unknown-error' && error.message.includes('404')) {
-             errorMessage = "Errore di configurazione (404). L'API Firebase Cloud Messaging potrebbe non essere configurata correttamente nel tuo progetto Google Cloud, anche se risulta abilitata. Prova a disabilitarla e riabilitarla.";
+             errorMessage = "Errore di configurazione (404). L'API Firebase Cloud Messaging non è configurata correttamente nel tuo progetto Google Cloud. Prova a disabilitarla e riabilitarla.";
         } else if (error.code === 'messaging/third-party-auth-error') {
-            errorMessage = "Errore di autenticazione con il servizio di messaggistica. Controlla che la chiave di servizio su Vercel sia corretta e che l'API FCM sia abilitata.";
+            errorMessage = "Errore di autenticazione. Controlla che la chiave di servizio su Vercel sia corretta e che l'API FCM sia abilitata.";
         }
         
         res.status(500).json({ error: errorMessage });
