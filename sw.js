@@ -1,6 +1,3 @@
-Istruzioni
-Sostituisci il contenuto del tuo file sw.js su GitHub con questo.
-
 // Aumentata la versione della cache per forzare l'aggiornamento
 const CACHE_NAME = 'alley33-card-v15'; 
 const urlsToCache = [
