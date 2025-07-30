@@ -61,7 +61,6 @@
                             <h2 id="detail-name" class="text-3xl font-bold text-gray-800"></h2>
                             <p id="detail-email" class="text-gray-500 mb-2"></p>
                             <p id="detail-phone" class="text-gray-500"></p>
-                            <!-- NUOVO: Elemento per la data di registrazione -->
                             <p id="detail-registration-date" class="text-sm text-gray-400 mt-2"></p>
                         </div>
                         <div class="bg-white p-2 rounded-lg shadow-md"><svg id="detail-barcode"></svg></div>
@@ -91,12 +90,72 @@
 
         <!-- CONTENUTO TAB NOTIFICHE -->
         <div id="notifiche-tab-content" class="p-8 hidden">
-            <!-- ... Contenuto Notifiche ... -->
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Crea e Invia Notifica Push</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <div>
+                        <label for="notification-title" class="block text-sm font-medium text-gray-700">Titolo</label>
+                        <input type="text" id="notification-title" placeholder="Es: Nuovi Arrivi!" class="mt-1 block w-full px-3 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label for="notification-body" class="block text-sm font-medium text-gray-700">Testo del messaggio</label>
+                        <textarea id="notification-body" rows="3" placeholder="Es: Scopri la nuova collezione primavera/estate." class="mt-1 block w-full px-3 py-2 border rounded-lg"></textarea>
+                    </div>
+                    <div>
+                        <label for="notification-url" class="block text-sm font-medium text-gray-700">Link di destinazione (URL)</label>
+                        <input type="url" id="notification-url" placeholder="https://card.alley33.it" class="mt-1 block w-full px-3 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label for="notification-image" class="block text-sm font-medium text-gray-700">Immagine (opzionale)</label>
+                        <input type="file" id="notification-image" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                        <div id="image-preview-container" class="hidden mt-2">
+                            <img id="image-preview" class="h-24 w-auto rounded border p-1">
+                            <button id="remove-image-button" class="mt-1 text-xs text-red-600 hover:underline">Rimuovi immagine</button>
+                        </div>
+                    </div>
+                    <button id="send-notification-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Invia Notifica</button>
+                    <p id="notification-status" class="text-sm text-center"></p>
+                </div>
+                <div class="bg-white p-4 rounded-lg border h-[50vh] flex flex-col">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-semibold text-gray-700">Destinatari</h3>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="select-all-users" class="h-4 w-4 text-green-600">
+                            <label for="select-all-users" class="ml-2 text-sm">Seleziona tutti</label>
+                        </div>
+                    </div>
+                    <div class="flex-grow overflow-y-auto border-t">
+                        <ul id="notification-user-list" class="divide-y"></ul>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- CONTENUTO TAB IMPOSTAZIONI -->
         <div id="impostazioni-tab-content" class="p-8 hidden">
-            <!-- ... Contenuto Impostazioni ... -->
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Impostazioni App</h2>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Loghi</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-lg border">
+                            <label for="logo-nero-upload" class="block text-sm font-medium text-gray-700">Logo Nero (per sfondi chiari)</label>
+                            <input type="file" id="logo-nero-upload" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"/>
+                            <img id="logo-nero-preview" class="mt-4 h-12" src="" alt="Anteprima Logo Nero">
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded-lg border">
+                            <label for="logo-bianco-upload" class="block text-sm font-medium text-white">Logo Bianco (per sfondi scuri)</label>
+                            <input type="file" id="logo-bianco-upload" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600"/>
+                            <img id="logo-bianco-preview" class="mt-4 h-12" src="" alt="Anteprima Logo Bianco">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Privacy Policy</h3>
+                    <textarea id="privacy-policy-editor" rows="10" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500"></textarea>
+                </div>
+                <button id="save-settings-button" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Salva Impostazioni</button>
+            </div>
         </div>
     </div>
 
@@ -138,7 +197,21 @@
         const clientiTabContent = document.getElementById('clienti-tab-content');
         const notificheTabContent = document.getElementById('notifiche-tab-content');
         const impostazioniTabContent = document.getElementById('impostazioni-tab-content');
-        
+        const notificationUserList = document.getElementById('notification-user-list');
+        const selectAllUsersCheckbox = document.getElementById('select-all-users');
+        const sendNotificationButton = document.getElementById('send-notification-button');
+        const notificationStatus = document.getElementById('notification-status');
+        const notificationImageInput = document.getElementById('notification-image');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImageButton = document.getElementById('remove-image-button');
+        const logoNeroUpload = document.getElementById('logo-nero-upload');
+        const logoBiancoUpload = document.getElementById('logo-bianco-upload');
+        const logoNeroPreview = document.getElementById('logo-nero-preview');
+        const logoBiancoPreview = document.getElementById('logo-bianco-preview');
+        const privacyPolicyEditor = document.getElementById('privacy-policy-editor');
+        const saveSettingsButton = document.getElementById('save-settings-button');
+
         let allUsersData = [];
         let selectedUserId = null;
 
@@ -194,8 +267,6 @@
             document.getElementById('detail-email').textContent = data.email;
             document.getElementById('detail-phone').textContent = `Cell: ${data.phone || 'N/D'}`;
             document.getElementById('detail-points').textContent = data.points || 0;
-
-            // NUOVO: Mostra la data di registrazione
             const registrationDateElement = document.getElementById('detail-registration-date');
             if (data.registrationDate) {
                 const date = new Date(data.registrationDate);
@@ -295,27 +366,128 @@
         }
 
         async function loadSettings() {
-            // ...
+            const settingsRef = doc(db, "settings", "appConfig");
+            const docSnap = await getDoc(settingsRef);
+            if (docSnap.exists()) {
+                const settings = docSnap.data();
+                privacyPolicyEditor.value = settings.privacyPolicy || '';
+                if(settings.logoNeroUrl) logoNeroPreview.src = settings.logoNeroUrl;
+                if(settings.logoBiancoUrl) logoBiancoPreview.src = settings.logoBiancoUrl;
+            }
+        }
+
+        async function uploadFile(file, path) {
+            if (!file) return null;
+            const storageRef = ref(storage, path);
+            await uploadBytes(storageRef, file);
+            return await getDownloadURL(storageRef);
         }
 
         async function saveSettings() {
-            // ...
+            saveSettingsButton.textContent = 'Salvataggio...';
+            saveSettingsButton.disabled = true;
+            try {
+                const logoNeroFile = logoNeroUpload.files[0];
+                const logoBiancoFile = logoBiancoUpload.files[0];
+                const logoNeroUrl = await uploadFile(logoNeroFile, 'settings/logo-nero.png');
+                const logoBiancoUrl = await uploadFile(logoBiancoFile, 'settings/logo-bianco.png');
+                const settingsData = { privacyPolicy: privacyPolicyEditor.value };
+                if (logoNeroUrl) settingsData.logoNeroUrl = logoNeroUrl;
+                if (logoBiancoUrl) settingsData.logoBiancoUrl = logoBiancoUrl;
+                const settingsRef = doc(db, "settings", "appConfig");
+                await setDoc(settingsRef, settingsData, { merge: true });
+                alert('Impostazioni salvate!');
+                await loadSettings();
+            } catch (error) {
+                console.error("Errore salvataggio impostazioni:", error);
+                alert("Errore nel salvataggio.");
+            } finally {
+                saveSettingsButton.textContent = 'Salva Impostazioni';
+                saveSettingsButton.disabled = false;
+            }
         }
 
         function populateNotificationUserList(users) {
-            // ...
+            notificationUserList.innerHTML = '';
+            users.filter(user => user.fcmToken).forEach(user => {
+                const li = document.createElement('li');
+                li.className = 'p-3 flex items-center';
+                li.innerHTML = `<input type="checkbox" class="h-4 w-4 user-notification-checkbox" value="${user.id}"><span class="ml-3 text-sm">${user.name} ${user.surname}</span>`;
+                notificationUserList.appendChild(li);
+            });
         }
 
+        selectAllUsersCheckbox.addEventListener('change', (e) => {
+            document.querySelectorAll('.user-notification-checkbox').forEach(checkbox => checkbox.checked = e.target.checked);
+        });
+
         async function handleSendNotification() {
-            // ...
+            const title = document.getElementById('notification-title').value;
+            const body = document.getElementById('notification-body').value;
+            const url = document.getElementById('notification-url').value;
+            const imageFile = notificationImageInput.files[0];
+            const selectedUsers = Array.from(document.querySelectorAll('.user-notification-checkbox:checked')).map(cb => cb.value);
+
+            if (!title || !body) return alert('Titolo e testo sono obbligatori.');
+            if (selectedUsers.length === 0) return alert('Seleziona almeno un destinatario.');
+
+            notificationStatus.textContent = 'Invio in corso...';
+            notificationStatus.classList.remove('text-red-500', 'text-green-500');
+            sendNotificationButton.disabled = true;
+
+            try {
+                let imageUrl = null;
+                if (imageFile) {
+                    notificationStatus.textContent = 'Caricamento immagine...';
+                    const imagePath = `notifications/${Date.now()}-${imageFile.name}`;
+                    imageUrl = await uploadFile(imageFile, imagePath);
+                    notificationStatus.textContent = 'Immagine caricata. Invio notifica...';
+                }
+
+                const response = await fetch('/api/send-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, body, url, imageUrl, userIds: selectedUsers }),
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Errore sconosciuto dal server.');
+                }
+                
+                notificationStatus.textContent = result.message || `Notifica inviata con successo!`;
+                notificationStatus.classList.add('text-green-500');
+
+            } catch (error) {
+                console.error("Errore invio notifica:", error);
+                notificationStatus.textContent = `Errore: ${error.message}`;
+                notificationStatus.classList.add('text-red-500');
+            } finally {
+                sendNotificationButton.disabled = false;
+            }
         }
         
+        adminTabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.dataset.tab;
+                adminTabButtons.forEach(btn => btn.classList.remove('tab-active'));
+                button.classList.add('tab-active');
+                clientiTabContent.classList.toggle('hidden', tab !== 'clienti');
+                impostazioniTabContent.classList.toggle('hidden', tab !== 'impostazioni');
+                notificheTabContent.classList.toggle('hidden', tab !== 'notifiche');
+                if (tab === 'notifiche') {
+                    populateNotificationUserList(allUsersData);
+                }
+            });
+        });
+
         onAuthStateChanged(auth, (user) => {
             if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                 loginView.classList.add('hidden');
                 dashboardView.classList.remove('hidden');
                 loadAllUsers();
-                // loadSettings(); // Funzionalità future
+                loadSettings();
             } else {
                 if (user) { signOut(auth); }
                 loginView.classList.remove('hidden');
@@ -338,7 +510,25 @@
         document.getElementById('history-list-admin').addEventListener('click', handleDeleteTransaction);
         document.getElementById('add-points-button').addEventListener('click', () => { const points = parseInt(document.getElementById('points-input').value); if (!isNaN(points) && points > 0) updatePoints(points); });
         document.getElementById('remove-points-button').addEventListener('click', () => { const points = parseInt(document.getElementById('points-input').value); if (!isNaN(points) && points > 0) updatePoints(-points); });
-        // Eventi per le altre tab verranno aggiunti qui
+        saveSettingsButton.addEventListener('click', saveSettings);
+        sendNotificationButton.addEventListener('click', handleSendNotification);
+        notificationImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imagePreview.src = event.target.result;
+                    imagePreviewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        removeImageButton.addEventListener('click', () => {
+            notificationImageInput.value = '';
+            imagePreview.src = '';
+            imagePreviewContainer.classList.add('hidden');
+        });
+
     </script>
 </body>
 </html>
