@@ -8,7 +8,7 @@ function initializeFirebaseAdmin() {
     }
     try {
         const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-        
+
         // Log di debug per verificare il project ID che stiamo usando
         console.log("Tentativo di inizializzazione di Firebase Admin per il progetto:", serviceAccount.project_id);
 
@@ -44,12 +44,13 @@ export default async function handler(req, res) {
 
     try {
         const usersRef = db.collection('users');
-        const q = await usersRef.where(admin.firestore.FieldPath.documentId(), 'in', userIds).get();
-        
+        // Recupera i documenti degli utenti individualmente per evitare il limite di 10 dell'operatore 'in'
+        const userDocs = await Promise.all(userIds.map((id) => usersRef.doc(id).get()));
+
         const tokens = [];
-        q.forEach(doc => {
-            const userData = doc.data();
-            if (userData.fcmToken) {
+        userDocs.forEach((docSnap) => {
+            const userData = docSnap.data();
+            if (userData && userData.fcmToken) {
                 tokens.push(userData.fcmToken);
             }
         });
@@ -58,9 +59,8 @@ export default async function handler(req, res) {
             return res.status(404).json({ error: 'Nessun utente valido trovato con un token per le notifiche.' });
         }
 
-        console.log(`Preparazione invio notifica a ${tokens.length} token.`);
-
-        const message = {
+console.log('Preparazione invio notifica a ' + tokens.length + ' token.');
+        const messagePayload = {
             notification: {
                 title: title,
                 body: body,
@@ -73,35 +73,41 @@ export default async function handler(req, res) {
                 notification: {
                     icon: 'https://card.alley33.it/icon-192x192.png',
                 }
-            },
-            tokens: tokens,
+            }
         };
 
-        const response = await messaging.sendMulticast(message);
-        
-        console.log('Notifiche inviate con successo:', response.successCount);
-        console.log('Errori nell\'invio:', response.failureCount);
-
-        if (response.failureCount > 0) {
-            response.responses.forEach((resp, idx) => {
-                if (!resp.success) {
-                    console.error(`Dettaglio errore per il token ${idx}:`, resp.error);
-                }
+        let successCount = 0;
+        let failureCount = 0;
+        const batchSize = 500;
+        for (let i = 0; i < tokens.length; i += batchSize) {
+            const batchTokens = tokens.slice(i, i + batchSize);
+            const batchResponse = await messaging.sendMulticast({
+                ...messagePayload,
+                tokens: batchTokens,
             });
+            successCount += batchResponse.successCount;
+            failureCount += batchResponse.failureCount;
+            if (batchResponse.failureCount > 0) {
+                batchResponse.responses.forEach((resp, idx) => {
+                    if (!resp.success) {
+                        console.error(`Dettaglio errore per il token ${batchTokens[idx]}:`, resp.error);
+                    }
+                });
+            }
         }
 
-        res.status(200).json({ success: true, message: `Notifiche inviate a ${response.successCount} utenti.` });
+        return res.status(200).json({ success: true, message: `Notifiche inviate a ${successCount} utenti con ${failureCount} errori.` });
 
     } catch (error) {
         console.error('ERRORE GRAVE DURANTE L\'INVIO:', error);
-        
+
         let errorMessage = `Errore interno del server: ${error.message}`;
         if (error.code === 'messaging/unknown-error' && error.message.includes('404')) {
-             errorMessage = "Errore di configurazione (404). L'API Firebase Cloud Messaging non è configurata correttamente nel tuo progetto Google Cloud. Prova a disabilitarla e riabilitarla.";
+            errorMessage = "Errore di configurazione (404). L'API Firebase Cloud Messaging non è configurata correttamente nel tuo progetto Google Cloud. Prova a disabilitarla e riabilitarla.";
         } else if (error.code === 'messaging/third-party-auth-error') {
             errorMessage = "Errore di autenticazione. Controlla che la chiave di servizio su Vercel sia corretta e che l'API FCM sia abilitata.";
         }
-        
-        res.status(500).json({ error: errorMessage });
+
+        return res.status(500).json({ error: errorMessage });
     }
 }
